@@ -1,0 +1,1 @@
+rootProject.name = "com.gamenews.gnn_chatgpt"
