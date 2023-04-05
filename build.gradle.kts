@@ -3,8 +3,11 @@ val kotlin_version: String by project
 val logback_version: String by project
 
 plugins {
-    kotlin("jvm") version "1.8.20"
-    id("io.ktor.plugin") version "2.2.4"
+    kotlin("jvm")
+    id("io.ktor.plugin")
+    id("io.gitlab.arturbosch.detekt")
+    id("com.github.ben-manes.versions")
+    jacoco
 }
 
 group = "com.gamenews"
@@ -21,11 +24,20 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-swagger:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    implementation("io.ktor:ktor-server-core-jvm:_")
+    implementation("io.ktor:ktor-server-auth-jvm:_")
+    implementation("io.ktor:ktor-server-netty-jvm:_")
+    implementation("ch.qos.logback:logback-classic:_")
+    testImplementation("io.ktor:ktor-server-tests-jvm:_")
+    testImplementation(Kotlin.test.junit)
+
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:_")
+}
+
+detekt {
+    autoCorrect = true
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
 }
