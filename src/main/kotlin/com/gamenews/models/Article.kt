@@ -20,10 +20,10 @@ private constructor(
          */
         fun newEntry(title: String, body: String) = Article(idCounter.getAndIncrement(), title, body)
     }
-
-    // mutable list of for storing articles
-    val articles = mutableListOf(Article.newEntry(
-        "Vanu has turned the tide",
-        "With the release of this app, Vanu grows stronger"
-    ))
 }
+
+// mutable list of articles for storing articles
+val articles = mutableListOf(Article.newEntry(
+    "Vanu has turned the tide",
+    "With the release of this app, Vanu grows stronger"
+))
