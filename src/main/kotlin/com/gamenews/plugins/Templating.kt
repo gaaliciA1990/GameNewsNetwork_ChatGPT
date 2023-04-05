@@ -1,7 +1,6 @@
 package com.gamenews.plugins
 
 import io.ktor.server.freemarker.FreeMarker
-import freemarker.cache.CacheStorage
 import freemarker.cache.ClassTemplateLoader
 import freemarker.core.HTMLOutputFormat
 import io.ktor.server.application.*
