@@ -56,10 +56,15 @@ fun Application.configureRouting() {
              * Show an article with a specific id
              */
             get("{id}") {
-                
+                val id = call.parameters.getOrFail<Int>("id").toInt()
+                call.respond(FreeMarkerContent("show.ftl", mapOf("article" to articles.find { it.id == id })))
             }
+            /**
+             * Show a page with fields for editing an article
+             */
             get("{id}/edit") {
-                // Show a page with fields for editing an article
+                val id = call.parameters.getOrFail<Int>("id").toInt()
+                call.respond(FreeMarkerContent("edit.ftl", mapOf("article" to articles.find { it.id == id })))
             }
             post("{id}") {
                 // Update or delete an article
