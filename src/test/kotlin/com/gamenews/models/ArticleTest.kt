@@ -11,16 +11,17 @@ class ArticleTest {
     var title: String = "Test Article Title"
     var body: String = "This article is the bee knees, balls to the wall"
 
-    //TODO: validate the articles list increased by 1
     @Test
     fun test_newEntry_adds_new_article(){
         // SETUP
 
         // DO
         val newArticle: Article = Article.newEntry(title, body)
+        articles.add(newArticle)
 
         // ASSERT
         assertEquals(title, newArticle.title)
         assertEquals(body, newArticle.body)
+        assertEquals(2, articles.size)
     }
 }

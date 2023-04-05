@@ -1,11 +1,14 @@
 package com.gamenews.plugins
 
+import com.gamenews.models.Article
 import com.gamenews.models.articles
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.freemarker.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.util.*
 
 fun Application.configureRouting() {
     routing {
@@ -15,10 +18,9 @@ fun Application.configureRouting() {
 
         route("articles") {
             /**
-             * Get a list of articles.
+             * Show a list of articles.
              */
             get {
-                // Show a list of articles
                 call.respond(
                     FreeMarkerContent(
                         "index.ftl",
@@ -26,14 +28,35 @@ fun Application.configureRouting() {
                     )
                 )
             }
+            /**
+             * Show a page with fields for creating a new article
+             */
             get("new") {
-                // Show a page with fields for creating a new article
+                call.respond(
+                    FreeMarkerContent(
+                        "new.ftl",
+                        model = null
+                    )
+                )
             }
+            /**
+             * Save an article
+             */
             post {
-                // Save an article
+                val formParams = call.receiveParameters()
+                val title = formParams.getOrFail("title")
+                val body = formParams.getOrFail("body")
+
+                val newArticle = Article.newEntry(title, body)
+                articles.add(newArticle)
+
+                call.respondRedirect("/articles/${newArticle.id}")
             }
+            /**
+             * Show an article with a specific id
+             */
             get("{id}") {
-                // Show an article with a specific id
+                
             }
             get("{id}/edit") {
                 // Show a page with fields for editing an article
