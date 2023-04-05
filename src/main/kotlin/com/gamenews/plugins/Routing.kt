@@ -1,16 +1,16 @@
 package com.gamenews.plugins
 
-import com.gamenews.models.Article
-import com.gamenews.models.articles
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
-import io.ktor.server.freemarker.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.util.*
+import io.ktor.server.response.respondRedirect
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 
 fun Application.configureRouting() {
+    val controller: Controller = Controller()
+
     routing {
         get("/") {
             call.respondRedirect("articles")
@@ -21,53 +21,42 @@ fun Application.configureRouting() {
              * Show a list of articles.
              */
             get {
-                call.respond(
-                    FreeMarkerContent(
-                        "index.ftl",
-                        mapOf("articles" to articles)
-                    )
-                )
+                controller.showAllArticles(this)
             }
+
             /**
              * Show a page with fields for creating a new article
              */
             get("new") {
-                call.respond(
-                    FreeMarkerContent(
-                        "new.ftl",
-                        model = null
-                    )
-                )
+                controller.newArticle(this)
             }
+
             /**
              * Save an article
              */
             post {
-                val formParams = call.receiveParameters()
-                val title = formParams.getOrFail("title")
-                val body = formParams.getOrFail("body")
-
-                val newArticle = Article.newEntry(title, body)
-                articles.add(newArticle)
-
-                call.respondRedirect("/articles/${newArticle.id}")
+                controller.saveArticle(this)
             }
+
             /**
              * Show an article with a specific id
              */
             get("{id}") {
-                val id = call.parameters.getOrFail<Int>("id").toInt()
-                call.respond(FreeMarkerContent("show.ftl", mapOf("article" to articles.find { it.id == id })))
+                controller.showArticle(this)
             }
+
             /**
              * Show a page with fields for editing an article
              */
             get("{id}/edit") {
-                val id = call.parameters.getOrFail<Int>("id").toInt()
-                call.respond(FreeMarkerContent("edit.ftl", mapOf("article" to articles.find { it.id == id })))
+                controller.editArticle(this)
             }
+
+            /**
+             * Update or delete an article
+             */
             post("{id}") {
-                // Update or delete an article
+                controller.postArticleById(this)
             }
         }
     }

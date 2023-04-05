@@ -1,9 +1,10 @@
 package com.gamenews.plugins
 
-import io.ktor.server.freemarker.FreeMarker
 import freemarker.cache.ClassTemplateLoader
 import freemarker.core.HTMLOutputFormat
-import io.ktor.server.application.*
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.freemarker.FreeMarker
 
 /**
  * Template settings to tell the app that FreeMarker templates are located in templates dir

@@ -1,9 +1,6 @@
 package com.gamenews.models
 
-import com.gamenews.models.Article
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 class ArticleTest {
@@ -12,7 +9,7 @@ class ArticleTest {
     var body: String = "This article is the bee knees, balls to the wall"
 
     @Test
-    fun test_newEntry_adds_new_article(){
+    fun test_newEntry_adds_new_article() {
         // SETUP
 
         // DO
