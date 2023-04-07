@@ -32,3 +32,12 @@ jobs:
       uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
         arguments: build
+    - name: JUnit Report Action
+      uses: mikepenz/action-junit-report@v3.7.6
+      with:
+        report_paths: "build/test-results/test/TEST-*.xml"
+    - name: JaCoCo Report
+      uses: Madrapps/jacoco-report@v1.3
+      with:
+        # Comma separated paths of the generated jacoco xml files
+        paths: build/reports/jacoco/test/jacocoTestReport.xml
