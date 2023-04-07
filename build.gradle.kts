@@ -28,6 +28,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jvm:_")
     implementation("io.ktor:ktor-server-netty-jvm:_")
     implementation("ch.qos.logback:logback-classic:_")
+    implementation("io.ktor:ktor-server-freemarker:$ktor_version")
     testImplementation("io.ktor:ktor-server-tests-jvm:_")
     testImplementation(Kotlin.test.junit)
 
