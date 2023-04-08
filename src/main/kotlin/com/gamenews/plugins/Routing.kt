@@ -21,14 +21,14 @@ fun Application.configureRouting() {
              * Show a list of articles.
              */
             get {
-                controller.showAllArticles(this)
+                controller.getAllArticles(this)
             }
 
             /**
              * Show a page with fields for creating a new article
              */
             get("new") {
-                controller.newArticle(this)
+                controller.createNewArticle(this)
             }
 
             /**
@@ -42,7 +42,7 @@ fun Application.configureRouting() {
              * Show an article with a specific id
              */
             get("{id}") {
-                controller.showArticle(this)
+                controller.getSingleArticle(this)
             }
 
             /**
@@ -53,10 +53,18 @@ fun Application.configureRouting() {
             }
 
             /**
-             * Update or delete an article
+             * Update an article
              */
-            post("{id}") {
-                controller.postArticleById(this)
+            post("{id}/update") {
+                controller.updateArticleById(this)
+            }
+
+            /**
+             * Delete an articel
+             */
+
+            post("{id}/delete") {
+                controller.deleteArticleById(this)
             }
         }
     }
