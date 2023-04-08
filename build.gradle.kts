@@ -29,16 +29,16 @@ dependencies {
     implementation(Ktor.server.auth)
     implementation(Ktor.server.netty)
     implementation(Ktor.server.freeMarker)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0-Beta")
+    implementation(KotlinX.coroutines.core)
     implementation("ch.qos.logback:logback-classic:_")
-    implementation("org.litote.kmongo:kmongo:4.8.0")
-    implementation("org.litote.kmongo:kmongo-coroutine:4.8.0")
+    implementation("org.litote.kmongo:kmongo:_")
+    implementation("org.litote.kmongo:kmongo-coroutine:_")
 
     testImplementation(Kotlin.test.junit)
     testImplementation("io.ktor:ktor-server-tests-jvm:_")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.0-Beta")
-    testImplementation("io.mockk:mockk:1.12.0")
-    testImplementation("org.testng:testng:7.1.0")
+    testImplementation(KotlinX.coroutines.test)
+    testImplementation(Testing.mockK)
+    testImplementation("org.testng:testng:_")
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:_")
 }
