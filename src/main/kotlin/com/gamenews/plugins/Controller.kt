@@ -15,9 +15,9 @@ import io.ktor.util.pipeline.PipelineContext
 /**
  * This class handles the calls for all routes
  */
-class Controller {
-
-    private val db = ArticlesDatabase()
+class Controller(
+    private val db: ArticlesDatabase
+) {
 
     /**
      * Handles calls to show all articles
@@ -34,6 +34,7 @@ class Controller {
         }
 
         context.call.respond(
+            HttpStatusCode.OK,
             FreeMarkerContent(
                 "index.ftl",
                 mapOf("articles" to allArticles)

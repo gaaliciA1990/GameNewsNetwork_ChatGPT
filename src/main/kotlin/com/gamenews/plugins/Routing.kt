@@ -8,9 +8,9 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 
-fun Application.configureRouting() {
-    val controller: Controller = Controller()
-
+fun Application.configureRouting(
+    controller: Controller
+) {
     routing {
         get("/") {
             call.respondRedirect("articles")

@@ -38,6 +38,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm:_")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.0-Beta")
     testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("org.testng:testng:7.1.0")
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:_")
 }

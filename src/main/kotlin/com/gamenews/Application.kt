@@ -1,5 +1,7 @@
 package com.gamenews
 
+import com.gamenews.data.ArticlesDatabase
+import com.gamenews.plugins.Controller
 import com.gamenews.plugins.configureRouting
 import com.gamenews.plugins.configureTemplating
 import io.ktor.server.application.Application
@@ -12,6 +14,8 @@ fun main() {
 }
 
 fun Application.module() {
-    configureRouting()
+    val controller: Controller = Controller(ArticlesDatabase())
+
+    configureRouting(controller)
     configureTemplating()
 }
