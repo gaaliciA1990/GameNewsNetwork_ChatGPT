@@ -162,29 +162,24 @@ class Controller(
     suspend fun deleteArticleById(context: PipelineContext<Unit, ApplicationCall>) {
         val id = context.call.parameters.getOrFail<String>("id")
         val article = db.getArticleById(id)
-        val formParams = context.call.receiveParameters()
 
-        when (formParams.getOrFail("_action")) {
-            "delete" -> {
-                if (article == null) {
-                    context.call.respond(
-                        HttpStatusCode.BadRequest,
-                        "Sorry, someone beat you to the punch. We couldn't find that article"
-                    )
-                    return
-                }
-                // If the articles was successfully deleted, redirect back to the articles page
-                if (db.deleteArticle(article.id)) {
-                    context.call.respondRedirect(
-                        "/articles"
-                    )
-                } else {
-                    context.call.respond(
-                        HttpStatusCode.NotModified,
-                        "Deletion of the article was not successful!"
-                    )
-                }
-            }
+        if (article == null) {
+            context.call.respond(
+                HttpStatusCode.BadRequest,
+                "Sorry, someone beat you to the punch. We couldn't find that article"
+            )
+            return
+        }
+        // If the articles was successfully deleted, redirect back to the articles page
+        if (db.deleteArticle(article.id)) {
+            context.call.respondRedirect(
+                "/articles"
+            )
+        } else {
+            context.call.respond(
+                HttpStatusCode.NotModified,
+                "Deletion of the article was not successful!"
+            )
         }
     }
 }
