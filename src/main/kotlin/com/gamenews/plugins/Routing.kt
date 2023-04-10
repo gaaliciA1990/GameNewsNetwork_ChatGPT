@@ -21,35 +21,35 @@ fun Application.configureRouting(
              * Show a list of articles.
              */
             get {
-                controller.getAllArticles(this)
+                controller.displayAllArticles(this)
             }
 
             /**
              * Show a page with fields for creating a new article
              */
             get("new") {
-                controller.createNewArticle(this)
+                controller.displayNewArticlePage(this)
             }
 
             /**
              * Save an article
              */
             post {
-                controller.saveArticle(this)
+                controller.saveNewArticle(this)
             }
 
             /**
              * Show an article with a specific id
              */
             get("{id}") {
-                controller.getSingleArticle(this)
+                controller.displaySingleArticle(this)
             }
 
             /**
              * Show a page with fields for editing an article
              */
             get("{id}/edit") {
-                controller.editArticle(this)
+                controller.displayEditArticle(this)
             }
 
             /**

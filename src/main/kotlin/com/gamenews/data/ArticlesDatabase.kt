@@ -1,16 +1,14 @@
 package com.gamenews.data
 
 import com.gamenews.models.Article
-import org.litote.kmongo.coroutine.coroutine
-import org.litote.kmongo.reactivestreams.KMongo
+import org.litote.kmongo.coroutine.CoroutineDatabase
 
 /**
  * Class for our database queries
  */
-class ArticlesDatabase {
-    private val client = KMongo.createClient().coroutine
-    private val database = client.getDatabase("ArticlesDatabase")
-
+class ArticlesDatabase(
+    private val database: CoroutineDatabase
+) {
     private val articles = database.getCollection<Article>()
 
     /**

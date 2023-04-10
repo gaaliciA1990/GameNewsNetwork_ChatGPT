@@ -13,12 +13,9 @@ data class Article(
     var body: String
 ) {
     companion object {
-        // automatically generate unique ID
-        private val idCounter = ObjectId().toString()
-
         /**
-         * Create a new article with an id, title, and body
+         * Create a new article with a new object id, title, and body
          */
-        fun newEntry(title: String, body: String) = Article(idCounter, title, body)
+        fun newEntry(title: String, body: String) = Article(ObjectId().toString(), title, body)
     }
 }

@@ -22,7 +22,7 @@ class Controller(
     /**
      * Handles calls to show all articles
      */
-    suspend fun getAllArticles(context: PipelineContext<Unit, ApplicationCall>) {
+    suspend fun displayAllArticles(context: PipelineContext<Unit, ApplicationCall>) {
         val allArticles = db.getAllArticles()
 
         if (allArticles.isEmpty()) {
@@ -43,9 +43,10 @@ class Controller(
     }
 
     /**
-     * Handles calls for creating a new article
+     * Handles calls for creating new article and redirects to the page to
+     * being the new article creation.
      */
-    suspend fun createNewArticle(context: PipelineContext<Unit, ApplicationCall>) {
+    suspend fun displayNewArticlePage(context: PipelineContext<Unit, ApplicationCall>) {
         context.call.respond(
             HttpStatusCode.OK,
             FreeMarkerContent(
@@ -56,10 +57,10 @@ class Controller(
     }
 
     /**
-     * Saves a newly created article. If successful, redirects to new article,
-     * otherwise we return a NotModified response
+     * Saves a newly created article in the page redirect from createNewArticle. If successful, redirects to new
+     * article, otherwise we return a NotModified response
      */
-    suspend fun saveArticle(context: PipelineContext<Unit, ApplicationCall>) {
+    suspend fun saveNewArticle(context: PipelineContext<Unit, ApplicationCall>) {
         val formParams = context.call.receiveParameters()
         val title = formParams.getOrFail("title")
         val body = formParams.getOrFail("body")
@@ -84,7 +85,7 @@ class Controller(
      * Shows a single article by ID when called. If successful, redirects to the selected article,
      * else returns NOT FOUND response
      */
-    suspend fun getSingleArticle(context: PipelineContext<Unit, ApplicationCall>) {
+    suspend fun displaySingleArticle(context: PipelineContext<Unit, ApplicationCall>) {
         val id = context.call.parameters.getOrFail<String>("id")
         val article = db.getArticleById(id)
 
@@ -106,7 +107,7 @@ class Controller(
      * Handles calls for editing of articles. Checks if the articles exists first, in case the article
      * was deleted before the edit button was clicked
      */
-    suspend fun editArticle(context: PipelineContext<Unit, ApplicationCall>) {
+    suspend fun displayEditArticle(context: PipelineContext<Unit, ApplicationCall>) {
         val id = context.call.parameters.getOrFail<String>("id")
         val article = db.getArticleById(id)
 
