@@ -55,15 +55,15 @@ fun Application.configureRouting(
             /**
              * Update an article
              */
-            post("{id}/update") {
+            post("{id}") {
                 controller.updateArticleById(this)
             }
 
             /**
-             * Delete an articel
+             * Delete an article
              */
 
-            post("{id}/delete") {
+            post("{id}") {
                 controller.deleteArticleById(this)
             }
         }

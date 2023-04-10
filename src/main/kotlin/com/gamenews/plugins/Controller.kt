@@ -96,7 +96,7 @@ class Controller(
     }
 
     /**
-     * Handles calls for editing of articles. Checks if the articles exists first, in case the article
+     * Handles calls for editing of an article. Checks if the article exists first, in case the article
      * was deleted before the edit button was clicked
      */
     suspend fun displayEditArticle(context: PipelineContext<Unit, ApplicationCall>) {
@@ -129,6 +129,7 @@ class Controller(
         when (formParams.getOrFail("_action")) {
             "update" -> {
                 val article = db.getArticleById(id)
+
                 if (article == null) {
                     context.call.respond(
                         HttpStatusCode.BadRequest,
@@ -143,7 +144,7 @@ class Controller(
 
                 if (db.updateArticle(article)) {
                     context.call.respondRedirect(
-                        "/article/$id"
+                        "/articles/$id"
                     )
                 } else {
                     context.call.respond(
