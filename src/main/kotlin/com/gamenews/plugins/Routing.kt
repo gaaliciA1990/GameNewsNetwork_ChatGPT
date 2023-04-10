@@ -8,9 +8,9 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 
-fun Application.configureRouting() {
-    val controller: Controller = Controller()
-
+fun Application.configureRouting(
+    controller: Controller
+) {
     routing {
         get("/") {
             call.respondRedirect("articles")
@@ -21,42 +21,50 @@ fun Application.configureRouting() {
              * Show a list of articles.
              */
             get {
-                controller.showAllArticles(this)
+                controller.displayAllArticles(this)
             }
 
             /**
              * Show a page with fields for creating a new article
              */
             get("new") {
-                controller.newArticle(this)
+                controller.displayNewArticlePage(this)
             }
 
             /**
              * Save an article
              */
             post {
-                controller.saveArticle(this)
+                controller.saveNewArticle(this)
             }
 
             /**
              * Show an article with a specific id
              */
             get("{id}") {
-                controller.showArticle(this)
+                controller.displaySingleArticle(this)
             }
 
             /**
              * Show a page with fields for editing an article
              */
             get("{id}/edit") {
-                controller.editArticle(this)
+                controller.displayEditArticle(this)
             }
 
             /**
-             * Update or delete an article
+             * Update an article
              */
-            post("{id}") {
-                controller.postArticleById(this)
+            post("{id}/update") {
+                controller.updateArticleById(this)
+            }
+
+            /**
+             * Delete an articel
+             */
+
+            post("{id}/delete") {
+                controller.deleteArticleById(this)
             }
         }
     }

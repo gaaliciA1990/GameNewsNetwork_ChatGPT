@@ -1,31 +1,21 @@
 package com.gamenews.models
 
-import java.util.concurrent.atomic.AtomicInteger
+import org.bson.codecs.pojo.annotations.BsonId
+import org.bson.types.ObjectId
 
 /**
  * Model class for the news articles
  */
-class Article
-private constructor(
-    val id: Int,
+data class Article(
+    @BsonId
+    val id: String,
     var title: String,
     var body: String
 ) {
     companion object {
-        // automatically generate unique ID
-        private val idCounter = AtomicInteger()
-
         /**
-         * Create a new article with an id, title, and body
+         * Create a new article with a new object id, title, and body
          */
-        fun newEntry(title: String, body: String) = Article(idCounter.getAndIncrement(), title, body)
+        fun newEntry(title: String, body: String) = Article(ObjectId().toString(), title, body)
     }
 }
-
-// mutable list of articles for storing articles
-val articles = mutableListOf(
-    Article.newEntry(
-        "Vanu has turned the tide",
-        "With the release of this app, Vanu grows stronger"
-    )
-)
