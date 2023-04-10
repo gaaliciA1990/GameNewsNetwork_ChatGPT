@@ -126,43 +126,41 @@ class Controller(
         val id = context.call.parameters.getOrFail<String>("id")
         val formParams = context.call.receiveParameters()
 
-        when (formParams.getOrFail("_action")) {
-            "update" -> {
-                val article = db.getArticleById(id)
+        val article = db.getArticleById(id)
 
-                if (article == null) {
-                    context.call.respond(
-                        HttpStatusCode.BadRequest,
-                        "Sorry, this article no longer exists"
-                    )
-                    return
-                }
+        // Make sure the article still exists in case it's deleted before edit clicked
+        if (article == null) {
+            context.call.respond(
+                HttpStatusCode.BadRequest,
+                "Sorry, this article no longer exists"
+            )
+            return
+        }
 
-                // update the title and body of the article, if not null
-                article.title = formParams.getOrFail("title")
-                article.body = formParams.getOrFail("body")
+        // update the title and body of the article, if not null
+        article.title = formParams.getOrFail("title")
+        article.body = formParams.getOrFail("body")
 
-                if (db.updateArticle(article)) {
-                    context.call.respondRedirect(
-                        "/articles/$id"
-                    )
-                } else {
-                    context.call.respond(
-                        HttpStatusCode.NotModified,
-                        "Failed to update the article, please try again."
-                    )
-                }
-            }
+        if (db.updateArticle(article)) {
+            context.call.respondRedirect(
+                "/articles/$id"
+            )
+        } else {
+            context.call.respond(
+                HttpStatusCode.NotModified,
+                "Failed to update the article, please try again."
+            )
         }
     }
 
     /**
-     * Handles calls to delete an articles from the db.
+     * Handles calls to delete an article from the db.
      */
     suspend fun deleteArticleById(context: PipelineContext<Unit, ApplicationCall>) {
         val id = context.call.parameters.getOrFail<String>("id")
         val article = db.getArticleById(id)
 
+        // Make sure the article still exists in case it's deleted before delete clicked
         if (article == null) {
             context.call.respond(
                 HttpStatusCode.BadRequest,
