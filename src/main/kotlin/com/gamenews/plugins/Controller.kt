@@ -25,14 +25,6 @@ class Controller(
     suspend fun displayAllArticles(context: PipelineContext<Unit, ApplicationCall>) {
         val allArticles = db.getAllArticles()
 
-        if (allArticles.isEmpty()) {
-            context.call.respond(
-                HttpStatusCode.NotFound,
-                "Something went terribly wrong. You have no articles!"
-            )
-            return
-        }
-
         context.call.respond(
             HttpStatusCode.OK,
             FreeMarkerContent(
