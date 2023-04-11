@@ -24,7 +24,6 @@ class ApplicationTest {
 
     @BeforeTest
     fun beforeEach() {
-        mockDB = mockk<ArticlesDatabase>()
         controller = Controller(mockDB)
     }
 
