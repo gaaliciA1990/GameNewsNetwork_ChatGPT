@@ -2,8 +2,6 @@ package com.gamenews
 
 import com.gamenews.data.ArticlesDatabase
 import com.gamenews.plugins.Controller
-import com.gamenews.plugins.configureRouting
-import com.gamenews.plugins.configureTemplating
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -36,12 +34,6 @@ class ApplicationTest {
 
     @Test
     fun testRoot() = testApplication {
-        // SETUP
-        application {
-            configureRouting(controller)
-            configureTemplating()
-        }
-
         // mock the articles in the mock DB
         coEvery { mockDB.getAllArticles() } returns listOf(mockk(relaxed = true), mockk(relaxed = true))
 
