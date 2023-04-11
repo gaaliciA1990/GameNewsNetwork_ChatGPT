@@ -5,8 +5,6 @@ import com.gamenews.plugins.Controller
 import com.gamenews.plugins.configureRouting
 import com.gamenews.plugins.configureTemplating
 import io.ktor.server.application.Application
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 
