@@ -10,19 +10,19 @@ SYSTEMD_FILE="gnn.service"
 
 echo "Building Server Executable"
 sleep 2
-./gradlew server:buildFatJar
+./gradlew buildFatJar
 
 echo "Creating $INSTALLATION_FOLDER"
-mkdir -p $INSTALLATION_FOLDER
+sudo mkdir -p $INSTALLATION_FOLDER
 
-touch $INSTALLATION_FOLDER/$PROPERTIES_FILE
+sudo touch $INSTALLATION_FOLDER/$PROPERTIES_FILE
 
-systemctl stop $SYSTEMD_FILE
+sudo systemctl stop $SYSTEMD_FILE
 
-cp $ARTIFACT_FOLDER/$ARTIFACT_FILE $INSTALLATION_FOLDER/$ARTIFACT_FILE
+sudo cp $ARTIFACT_FOLDER/$ARTIFACT_FILE $INSTALLATION_FOLDER/$ARTIFACT_FILE
 
 sudo cp $SYSTEMD_FILE /etc/systemd/system/$SYSTEMD_FILE
 
-systemctl daemon-reload
+sudo systemctl daemon-reload
 
-systemctl restart $SYSTEMD_FILE
+sudo systemctl restart $SYSTEMD_FILE
