@@ -175,8 +175,3 @@ class ArticlesDatabaseTest {
         assertFalse(updated)
     }
 }
-// SET UP
-
-// DO
-
-// ASSERT
