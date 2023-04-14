@@ -3,9 +3,9 @@
 ARTIFACT_FILE="com.gamenews.gnn_chatgpt-all.jar"
 ARTIFACT_FOLDER="build/libs"
 
-INSTALLATION_FOLDER="$HOME/.local/gnn/"
+INSTALLATION_FOLDER="$HOME/.local/gnn"
 
-PROPERTIES_FILE="application.conf"
+PROPERTIES_FILE="override.conf"
 SYSTEMD_FILE="gnn.service"
 SYSTEMD_FOLDER="$HOME/.config/systemd/user"
 
