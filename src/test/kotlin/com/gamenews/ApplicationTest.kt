@@ -405,9 +405,3 @@ class ApplicationTest {
         )
     }
 }
-
-// SET UP
-
-// DO
-
-// ASSERT
