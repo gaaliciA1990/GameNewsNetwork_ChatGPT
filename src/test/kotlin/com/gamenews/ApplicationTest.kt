@@ -13,6 +13,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.testing.testApplication
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -47,6 +48,9 @@ class ApplicationTest {
     @Test
     fun testRoot() = testApplication {
         // SETUP
+        environment {
+            config = ApplicationConfig("application-test.conf")
+        }
         application {
             configureRouting(controller)
             configureTemplating()

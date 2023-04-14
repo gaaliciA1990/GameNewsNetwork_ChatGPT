@@ -1,0 +1,12 @@
+[Unit]
+Description=GNN Server service
+After=syslog.target
+
+[Service]
+WorkingDirectory=%h/.local/gnn/
+ExecStart=/bin/java -jar com.gamenews.gnn_chatgpt-all.jar -config=override.conf
+ExecStop=/bin/kill -15 $MAINPID
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
