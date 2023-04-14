@@ -1,6 +1,7 @@
 package com.gamenews
 
 import com.gamenews.data.ArticlesDatabase
+import com.gamenews.models.Article
 import com.gamenews.plugins.Controller
 import com.gamenews.plugins.configureRouting
 import com.gamenews.plugins.configureTemplating
@@ -18,9 +19,10 @@ fun main() {
 fun Application.module() {
     val client = KMongo.createClient().coroutine
     val database = client.getDatabase("ArticlesDatabase")
+    val articles = database.getCollection<Article>()
 
-    val articlesDB = ArticlesDatabase(database)
-    val controller: Controller = Controller(articlesDB)
+    val articlesDB = ArticlesDatabase(articles)
+    val controller = Controller(articlesDB)
 
     configureRouting(controller)
     configureTemplating()
