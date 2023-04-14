@@ -1,3 +1,5 @@
+@file:Suppress("MaximumLineLength", "MaxLineLength")
+
 package com.gamenews
 
 import com.gamenews.data.ArticlesDatabase
@@ -14,6 +16,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -41,16 +44,21 @@ class ApplicationTest {
         unmockkAll()
     }
 
+    private fun configuredTestApplication(
+        block: suspend ApplicationTestBuilder.() -> Unit
+    ) = testApplication {
+        environment {
+            config = ApplicationConfig("application-test.conf")
+        }
+        block()
+    }
+
     /**
      * Integration test to confirm we load the articles page and
      * all information is displayed from template
      */
     @Test
-    fun testRoot() = testApplication {
-        // SETUP
-        environment {
-            config = ApplicationConfig("application-test.conf")
-        }
+    fun testRoot() = configuredTestApplication {
         application {
             configureRouting(controller)
             configureTemplating()
@@ -68,7 +76,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `new article page is displayed when going to create a new article`() = testApplication {
+    fun `new article page is displayed when going to create a new article`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -84,7 +92,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `save new articles creates an article and responds with HTTPS Found status`() = testApplication {
+    fun `save new articles creates an article and responds with HTTPS Found status`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -113,7 +121,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `save new articles fails to save and responds with HTTPS Not Modified status `() = testApplication {
+    fun `save new articles fails to save and responds with HTTPS Not Modified status `() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -143,7 +151,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `single article is displayed when using an article id and responds with HTTPS OK status `() = testApplication {
+    fun `single article is displayed when using an article id and responds with HTTPS OK status `() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -166,29 +174,28 @@ class ApplicationTest {
     }
 
     @Test
-    fun `single article is not displayed when using an id and responds with HTTPS Not Found status `() =
-        testApplication {
-            // SET UP
-            application {
-                configureRouting(controller)
-                configureTemplating()
-            }
-
-            val testArticle = Article.newEntry("null", "null")
-
-            // Mock db to get an article but return null value
-            coEvery { mockDB.getArticleById(testArticle.id) } returns null
-
-            // DO
-            val response = client.get("/articles/${testArticle.id}")
-
-            // ASSERT
-            assertEquals(HttpStatusCode.NotFound, response.status)
-            assertTrue(response.bodyAsText().contains("Sorry, this article no longer exists"))
+    fun `single article is not displayed when using an id and responds with HTTPS Not Found status `() = configuredTestApplication {
+        // SET UP
+        application {
+            configureRouting(controller)
+            configureTemplating()
         }
 
+        val testArticle = Article.newEntry("null", "null")
+
+        // Mock db to get an article but return null value
+        coEvery { mockDB.getArticleById(testArticle.id) } returns null
+
+        // DO
+        val response = client.get("/articles/${testArticle.id}")
+
+        // ASSERT
+        assertEquals(HttpStatusCode.NotFound, response.status)
+        assertTrue(response.bodyAsText().contains("Sorry, this article no longer exists"))
+    }
+
     @Test
-    fun `display article to edit shows the edit page`() = testApplication {
+    fun `display article to edit shows the edit page`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -211,7 +218,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `display article fails to shows the edit page and responds with HTTPS Not Found status`() = testApplication {
+    fun `display article fails to shows the edit page and responds with HTTPS Not Found status`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -232,7 +239,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `updating an article updates the article in the db and returns HTTPS Found status `() = testApplication {
+    fun `updating an article updates the article in the db and returns HTTPS Found status `() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -266,7 +273,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `updating an article fails to update in the db and returns HTTPS Not Modified status `() = testApplication {
+    fun `updating an article fails to update in the db and returns HTTPS Not Modified status `() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -299,7 +306,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `updating an article fails due to article not found and returns HTTPS Bad Request status `() = testApplication {
+    fun `updating an article fails due to article not found and returns HTTPS Bad Request status `() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -332,7 +339,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `deleting an article succeeds and returns HTTPS Found status `() = testApplication {
+    fun `deleting an article succeeds and returns HTTPS Found status `() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -357,7 +364,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `deleting an article fails to delete and returns HTTPS Not Modified status `() = testApplication {
+    fun `deleting an article fails to delete and returns HTTPS Not Modified status `() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -383,7 +390,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `deleting an article fails due to article not found and returns HTTPS Bad Request status `() = testApplication {
+    fun `deleting an article fails due to article not found and returns HTTPS Bad Request status `() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
