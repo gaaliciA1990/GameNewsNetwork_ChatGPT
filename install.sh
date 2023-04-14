@@ -18,6 +18,9 @@ mkdir -p $INSTALLATION_FOLDER
 
 touch $INSTALLATION_FOLDER/$PROPERTIES_FILE
 
+export XDG_RUNTIME_DIR=/run/user/$(id -u $USER)
+export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u $USER)/bus
+
 echo "Stopping server..."
 systemctl --user stop $SYSTEMD_FILE
 
