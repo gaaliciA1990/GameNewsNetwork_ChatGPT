@@ -3,7 +3,7 @@
 ARTIFACT_FILE="com.gamenews.gnn_chatgpt-all.jar"
 ARTIFACT_FOLDER="build/libs"
 
-INSTALLATION_FOLDER="/.local/gnn/"
+INSTALLATION_FOLDER="$HOME/.local/gnn/"
 
 PROPERTIES_FILE="application.conf"
 SYSTEMD_FILE="gnn.service"
@@ -14,9 +14,9 @@ sleep 2
 ./gradlew buildFatJar
 
 echo "Creating $INSTALLATION_FOLDER"
-sudo mkdir -p $INSTALLATION_FOLDER
+mkdir -p $INSTALLATION_FOLDER
 
-sudo touch $INSTALLATION_FOLDER/$PROPERTIES_FILE
+touch $INSTALLATION_FOLDER/$PROPERTIES_FILE
 
 echo "Stopping server..."
 systemctl --user stop $SYSTEMD_FILE
