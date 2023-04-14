@@ -3,10 +3,11 @@
 ARTIFACT_FILE="com.gamenews.gnn_chatgpt-all.jar"
 ARTIFACT_FOLDER="build/libs"
 
-INSTALLATION_FOLDER="/opt/gnn/"
+INSTALLATION_FOLDER="/.local/gnn/"
 
 PROPERTIES_FILE="application.conf"
 SYSTEMD_FILE="gnn.service"
+SYSTEMD_FOLDER="$HOME/.config/systemd/user"
 
 echo "Building Server Executable"
 sleep 2
@@ -17,12 +18,17 @@ sudo mkdir -p $INSTALLATION_FOLDER
 
 sudo touch $INSTALLATION_FOLDER/$PROPERTIES_FILE
 
-sudo systemctl stop $SYSTEMD_FILE
+echo "Stopping server..."
+systemctl --user stop $SYSTEMD_FILE
 
-sudo cp $ARTIFACT_FOLDER/$ARTIFACT_FILE $INSTALLATION_FOLDER/$ARTIFACT_FILE
+echo "Copying file $ARTIFACT_FOLDER/$ARTIFACT_FILE to $INSTALLATION_FOLDER/$ARTIFACT_FILE"
+cp $ARTIFACT_FOLDER/$ARTIFACT_FILE $INSTALLATION_FOLDER/$ARTIFACT_FILE
 
-sudo cp $SYSTEMD_FILE /etc/systemd/system/$SYSTEMD_FILE
+echo "Installing systemd unit $SYSTEMD_FILE in $SYSTEMD_FOLDER/$SYSTEMD_FILE"
+mkdir -p $SYSTEMD_FOLDER
+cp -f $SYSTEMD_FILE $SYSTEMD_FOLDER/$SYSTEMD_FILE
 
-sudo systemctl daemon-reload
-
-sudo systemctl restart $SYSTEMD_FILE
+echo "Starting server"
+systemctl --user daemon-reload
+systemctl --user restart $SYSTEMD_FILE
+systemctl --user enable $SYSTEMD_FILE
