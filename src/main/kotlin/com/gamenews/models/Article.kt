@@ -16,6 +16,9 @@ data class Article(
         /**
          * Create a new article with a new object id, title, and body
          */
-        fun newEntry(title: String, body: String) = Article(ObjectId().toString(), title, body)
+        fun newEntry(
+            title: String,
+            body: String,
+        ) = Article(ObjectId().toString(), title, body)
     }
 }
