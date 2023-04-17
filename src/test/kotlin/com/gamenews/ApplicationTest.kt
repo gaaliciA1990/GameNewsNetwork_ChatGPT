@@ -72,7 +72,7 @@ class ApplicationTest {
 
         // ASSERT
         assertEquals(HttpStatusCode.OK, response.status)
-        assertTrue(response.bodyAsText().contains("Game News Network"))
+        assertTrue(response.bodyAsText().contains("GNN"))
     }
 
     @Test
