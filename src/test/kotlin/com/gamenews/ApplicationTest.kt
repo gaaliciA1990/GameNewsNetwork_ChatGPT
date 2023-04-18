@@ -22,6 +22,7 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.unmockkAll
+import java.time.LocalDateTime
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -31,6 +32,8 @@ import kotlin.test.assertTrue
 class ApplicationTest {
     lateinit var mockDB: ArticlesDatabase
     lateinit var controller: Controller
+    private val PUBLISHDATE: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
+
 
     @BeforeTest
     fun beforeEach() {
@@ -100,6 +103,8 @@ class ApplicationTest {
         }
         val title = "Test Title"
         val body = "I am a body, feed me"
+        val date = "2023-04-16 16:41:00"
+
 
         // Mock db to create article
         coEvery { mockDB.createArticle(any()) } returns true
@@ -111,6 +116,7 @@ class ApplicationTest {
                     formData {
                         append("title", title)
                         append("body", body)
+                        append("publish date", date)
                     }
                 )
             )
@@ -127,8 +133,11 @@ class ApplicationTest {
             configureRouting(controller)
             configureTemplating()
         }
+
         val title = "Does it matter?"
         val body = "I should fail!"
+        val date = "2023-04-16 16:41:00"
+
 
         // Mock db to create article
         coEvery { mockDB.createArticle(any()) } returns false
@@ -140,6 +149,7 @@ class ApplicationTest {
                     formData {
                         append("title", title)
                         append("body", body)
+                        append("publish date", date)
                     }
                 )
             )
@@ -160,7 +170,8 @@ class ApplicationTest {
         val title = "Amazing Test Article"
         val body = "This test is generating wonders!"
 
-        val testArticle = Article.newEntry(title, body)
+
+        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
 
         // Mock db to get an article
         coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -181,7 +192,7 @@ class ApplicationTest {
             configureTemplating()
         }
 
-        val testArticle = Article.newEntry("null", "null")
+        val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
 
         // Mock db to get an article but return null value
         coEvery { mockDB.getArticleById(testArticle.id) } returns null
@@ -205,7 +216,8 @@ class ApplicationTest {
         val title = "Edit Me Article"
         val body = "I'm so lonely!"
 
-        val testArticle = Article.newEntry(title, body)
+
+        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
 
         // Mock db to get an article
         coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -225,7 +237,7 @@ class ApplicationTest {
             configureTemplating()
         }
 
-        val testArticle = Article.newEntry("null", "null")
+        val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
 
         // Mock db to get an article but return null value
         coEvery { mockDB.getArticleById(testArticle.id) } returns null
@@ -249,7 +261,7 @@ class ApplicationTest {
         val body = "I'm so lonely!"
         val newTitle = "I'm a new article"
 
-        val testArticle = Article.newEntry(title, body)
+        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
 
         // Mock db to get an article
         coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -281,7 +293,7 @@ class ApplicationTest {
         }
         val newTitle = "I'm a new article"
 
-        val testArticle = Article.newEntry("null", "null")
+        val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
 
         // Mock db to get an article
         coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -316,7 +328,7 @@ class ApplicationTest {
         val body = "I'm not real"
         val newTitle = "I will fail"
 
-        val testArticle = Article.newEntry(title, body)
+        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
 
         // Mock db to get an article but doesn't find it
         coEvery { mockDB.getArticleById(testArticle.id) } returns null
@@ -348,7 +360,7 @@ class ApplicationTest {
         val title = "Deleted Article"
         val body = "What did I do to deserve this?!"
 
-        val testArticle = Article.newEntry(title, body)
+        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
 
         // Mock db to get an article but doesn't find it
         coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -373,7 +385,7 @@ class ApplicationTest {
         val title = "I can't be deleted"
         val body = "Evil laughs, muahahahahaha!"
 
-        val testArticle = Article.newEntry(title, body)
+        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
 
         // Mock db to get an article but doesn't find it
         coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -399,7 +411,7 @@ class ApplicationTest {
         val title = "I don't exist"
         val body = "I'm not real"
 
-        val testArticle = Article.newEntry(title, body)
+        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
 
         // Mock db to get an article but doesn't find it
         coEvery { mockDB.getArticleById(testArticle.id) } returns null
