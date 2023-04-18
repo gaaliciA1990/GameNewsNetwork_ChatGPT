@@ -7,19 +7,19 @@
                 Enter Title
             </p>
             <p>
-                <input type="text" name="title">
+                <input type="text" name="title" required>
             </p>
             <p>
                 Enter Content
             </p>
             <p>
-                <textarea name="body"></textarea>
+                <textarea name="body" required></textarea>
             </p>
             <p>
                 Enter Publish Date <br> [YYYY-MM-DD HH:MM:SS]
             </p>
             <p>
-                <input type="text" name="publish_date">
+                <input type="text" name="publish_date" required>
             </p>
             <p>
                 <input type="submit">
