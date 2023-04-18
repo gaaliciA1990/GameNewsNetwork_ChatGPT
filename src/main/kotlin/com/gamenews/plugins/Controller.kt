@@ -58,9 +58,9 @@ class Controller(
      */
     suspend fun saveNewArticle(call: ApplicationCall) {
         val formParams = call.receiveParameters()
-        val title = formParams.getOrFail("title").trimEnd()
-        val body = formParams.getOrFail("body").trimEnd()
-        val date = formParams.getOrFail("publish_date").trimEnd()
+        val title = formParams.getOrFail("title").trim()
+        val body = formParams.getOrFail("body").trim()
+        val date = formParams.getOrFail("publish_date").trim()
 
         var datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         var publishDate = LocalDateTime.parse(date, datePattern)
@@ -146,8 +146,8 @@ class Controller(
         }
 
         // update the title and body of the article, if not null
-        article.title = formParams.getOrFail("title").trimEnd()
-        article.body = formParams.getOrFail("body").trimEnd()
+        article.title = formParams.getOrFail("title").trim()
+        article.body = formParams.getOrFail("body").trim()
 
         if (db.updateArticle(article)) {
             call.respondRedirect(
