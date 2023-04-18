@@ -10,6 +10,9 @@
                 <textarea name="body"></textarea>
             </p>
             <p>
+                <input type="text" name="publish date">
+            </p>
+            <p>
                 <input type="submit">
             </p>
         </form>
