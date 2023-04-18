@@ -49,10 +49,14 @@ class ArticlesDatabaseTest {
         val article2: Article = Article.newEntry("Test 2", "Test Body 2", date)
 
         coEvery { mockCollection.find() } returns publisher
+        coEvery { publisher.skip(any()) } returns publisher
+        coEvery { publisher.limit(any()) } returns publisher
+        coEvery { publisher.partial(any()) } returns publisher
+        coEvery { publisher.descendingSort(any()) } returns publisher
         coEvery { publisher.toList() } returns listOf(article1, article2)
 
         // DO
-        val listOfArticles = articlesDB.getAllArticles()
+        val listOfArticles = articlesDB.getAllArticles(2, 2)
 
         // ASSERT
         assertFalse(listOfArticles.isEmpty())
@@ -64,10 +68,14 @@ class ArticlesDatabaseTest {
     fun `getAllArticles returns an empty list of articles`() = runTest {
         // SET UP
         coEvery { mockCollection.find() } returns publisher
+        coEvery { publisher.skip(any()) } returns publisher
+        coEvery { publisher.limit(any()) } returns publisher
+        coEvery { publisher.partial(any()) } returns publisher
+        coEvery { publisher.descendingSort(any()) } returns publisher
         coEvery { publisher.toList() } returns emptyList()
 
         // DO
-        val listOfArticles = articlesDB.getAllArticles()
+        val listOfArticles = articlesDB.getAllArticles(2, 2)
 
         // ASSERT
         assertTrue(listOfArticles.isEmpty())

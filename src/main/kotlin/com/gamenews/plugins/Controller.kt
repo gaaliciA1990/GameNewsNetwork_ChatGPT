@@ -19,15 +19,15 @@ class Controller(
     private val db: ArticlesDatabase
 ) {
     companion object {
-        const val SKIP = 10
-        const val LIMIT = 10
+        const val PAGENUM = 1
+        const val LIMIT = 3
     }
 
     /**
      * Handles calls to show all articles
      */
     suspend fun displayAllArticles(call: ApplicationCall) {
-        val allArticles = db.getAllArticles()
+        val allArticles = db.getAllArticles(PAGENUM, LIMIT)
 
         call.respond(
             HttpStatusCode.OK,

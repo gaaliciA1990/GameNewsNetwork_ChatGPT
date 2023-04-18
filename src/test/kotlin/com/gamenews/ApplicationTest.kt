@@ -32,7 +32,7 @@ import kotlin.test.assertTrue
 class ApplicationTest {
     lateinit var mockDB: ArticlesDatabase
     lateinit var controller: Controller
-    private val PUBLISHDATE: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
+    private val publishDate: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
 
     @BeforeTest
     fun beforeEach() {
@@ -67,7 +67,7 @@ class ApplicationTest {
         }
 
         // mock the articles in the mock DB
-        coEvery { mockDB.getAllArticles() } returns listOf(mockk(relaxed = true), mockk(relaxed = true))
+        coEvery { mockDB.getAllArticles(any(), any()) } returns listOf(mockk(relaxed = true), mockk(relaxed = true))
 
         // DO
         val response = client.get("/")
@@ -109,11 +109,15 @@ class ApplicationTest {
 
         // DO
         val response = client.post("/articles") {
-            setBody(MultiPartFormDataContent(formData {
-                append("title", title)
-                append("body", body)
-                append("publish_date", date)
-            }))
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        append("title", title)
+                        append("body", body)
+                        append("publish_date", date)
+                    }
+                )
+            )
         }
 
         // ASSERT
@@ -137,11 +141,15 @@ class ApplicationTest {
 
         // DO
         val response = client.post("/articles") {
-            setBody(MultiPartFormDataContent(formData {
-                append("title", title)
-                append("body", body)
-                append("publish_date", date)
-            }))
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        append("title", title)
+                        append("body", body)
+                        append("publish_date", date)
+                    }
+                )
+            )
         }
 
         // ASSERT
@@ -160,7 +168,7 @@ class ApplicationTest {
             val title = "Amazing Test Article"
             val body = "This test is generating wonders!"
 
-            val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+            val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article
             coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -182,7 +190,7 @@ class ApplicationTest {
                 configureTemplating()
             }
 
-            val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
+            val testArticle = Article.newEntry("null", "null", publishDate)
 
             // Mock db to get an article but return null value
             coEvery { mockDB.getArticleById(testArticle.id) } returns null
@@ -206,7 +214,7 @@ class ApplicationTest {
         val title = "Edit Me Article"
         val body = "I'm so lonely!"
 
-        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+        val testArticle = Article.newEntry(title, body, publishDate)
 
         // Mock db to get an article
         coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -227,7 +235,7 @@ class ApplicationTest {
                 configureTemplating()
             }
 
-            val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
+            val testArticle = Article.newEntry("null", "null", publishDate)
 
             // Mock db to get an article but return null value
             coEvery { mockDB.getArticleById(testArticle.id) } returns null
@@ -252,7 +260,7 @@ class ApplicationTest {
             val body = "I'm so lonely!"
             val newTitle = "I'm a new article"
 
-            val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+            val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article
             coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -261,10 +269,14 @@ class ApplicationTest {
 
             // DO
             val response = client.post("/articles/${testArticle.id}") {
-                setBody(MultiPartFormDataContent(formData {
-                    append("title", newTitle)
-                    append("body", body)
-                }))
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            append("title", newTitle)
+                            append("body", body)
+                        }
+                    )
+                )
             }
 
             // ASSERT
@@ -281,7 +293,7 @@ class ApplicationTest {
             }
             val newTitle = "I'm a new article"
 
-            val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
+            val testArticle = Article.newEntry("null", "null", publishDate)
 
             // Mock db to get an article
             coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -290,10 +302,14 @@ class ApplicationTest {
 
             // DO
             val response = client.post("/articles/${testArticle.id}") {
-                setBody(MultiPartFormDataContent(formData {
-                    append("title", newTitle)
-                    append("body", "null")
-                }))
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            append("title", newTitle)
+                            append("body", "null")
+                        }
+                    )
+                )
             }
 
             // ASSERT
@@ -313,17 +329,21 @@ class ApplicationTest {
             val body = "I'm not real"
             val newTitle = "I will fail"
 
-            val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+            val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article but doesn't find it
             coEvery { mockDB.getArticleById(testArticle.id) } returns null
 
             // DO
             val response = client.post("/articles/${testArticle.id}") {
-                setBody(MultiPartFormDataContent(formData {
-                    append("title", newTitle)
-                    append("body", body)
-                }))
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            append("title", newTitle)
+                            append("body", body)
+                        }
+                    )
+                )
             }
 
             // ASSERT
@@ -341,7 +361,7 @@ class ApplicationTest {
         val title = "Deleted Article"
         val body = "What did I do to deserve this?!"
 
-        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+        val testArticle = Article.newEntry(title, body, publishDate)
 
         // Mock db to get an article but doesn't find it
         coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -366,7 +386,7 @@ class ApplicationTest {
         val title = "I can't be deleted"
         val body = "Evil laughs, muahahahahaha!"
 
-        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+        val testArticle = Article.newEntry(title, body, publishDate)
 
         // Mock db to get an article but doesn't find it
         coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
@@ -393,7 +413,7 @@ class ApplicationTest {
             val title = "I don't exist"
             val body = "I'm not real"
 
-            val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+            val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article but doesn't find it
             coEvery { mockDB.getArticleById(testArticle.id) } returns null

@@ -13,8 +13,13 @@ class ArticlesDatabase(
     /**
      * Query all articles in the db
      */
-    suspend fun getAllArticles(): List<Article> {
-        return articles.find().toList()
+    suspend fun getAllArticles(pageNum: Int, limit: Int): List<Article> {
+        return articles.find()
+            .skip(skip = (pageNum - 1) * limit)
+            .limit(limit = limit)
+            .partial(true)
+            .descendingSort(Article::publishDate)
+            .toList()
     }
 
     /**
