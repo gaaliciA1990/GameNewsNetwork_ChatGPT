@@ -34,7 +34,6 @@ class ApplicationTest {
     lateinit var controller: Controller
     private val PUBLISHDATE: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
 
-
     @BeforeTest
     fun beforeEach() {
         mockDB = mockk()
@@ -105,21 +104,16 @@ class ApplicationTest {
         val body = "I am a body, feed me"
         val date = "2023-04-16 16:41:00"
 
-
         // Mock db to create article
         coEvery { mockDB.createArticle(any()) } returns true
 
         // DO
         val response = client.post("/articles") {
-            setBody(
-                MultiPartFormDataContent(
-                    formData {
-                        append("title", title)
-                        append("body", body)
-                        append("publish date", date)
-                    }
-                )
-            )
+            setBody(MultiPartFormDataContent(formData {
+                append("title", title)
+                append("body", body)
+                append("publish_date", date)
+            }))
         }
 
         // ASSERT
@@ -138,21 +132,16 @@ class ApplicationTest {
         val body = "I should fail!"
         val date = "2023-04-16 16:41:00"
 
-
         // Mock db to create article
         coEvery { mockDB.createArticle(any()) } returns false
 
         // DO
         val response = client.post("/articles") {
-            setBody(
-                MultiPartFormDataContent(
-                    formData {
-                        append("title", title)
-                        append("body", body)
-                        append("publish date", date)
-                    }
-                )
-            )
+            setBody(MultiPartFormDataContent(formData {
+                append("title", title)
+                append("body", body)
+                append("publish_date", date)
+            }))
         }
 
         // ASSERT
@@ -161,49 +150,50 @@ class ApplicationTest {
     }
 
     @Test
-    fun `single article is displayed when using an article id and responds with HTTPS OK status `() = configuredTestApplication {
-        // SET UP
-        application {
-            configureRouting(controller)
-            configureTemplating()
+    fun `single article is displayed when using an article id and responds with HTTPS OK status `() =
+        configuredTestApplication {
+            // SET UP
+            application {
+                configureRouting(controller)
+                configureTemplating()
+            }
+            val title = "Amazing Test Article"
+            val body = "This test is generating wonders!"
+
+            val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+
+            // Mock db to get an article
+            coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+
+            // DO
+            val response = client.get("/articles/${testArticle.id}")
+
+            // ASSERT
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertTrue(response.bodyAsText().contains(title))
         }
-        val title = "Amazing Test Article"
-        val body = "This test is generating wonders!"
-
-
-        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
-
-        // Mock db to get an article
-        coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
-
-        // DO
-        val response = client.get("/articles/${testArticle.id}")
-
-        // ASSERT
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertTrue(response.bodyAsText().contains(title))
-    }
 
     @Test
-    fun `single article is not displayed when using an id and responds with HTTPS Not Found status `() = configuredTestApplication {
-        // SET UP
-        application {
-            configureRouting(controller)
-            configureTemplating()
+    fun `single article is not displayed when using an id and responds with HTTPS Not Found status `() =
+        configuredTestApplication {
+            // SET UP
+            application {
+                configureRouting(controller)
+                configureTemplating()
+            }
+
+            val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
+
+            // Mock db to get an article but return null value
+            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+
+            // DO
+            val response = client.get("/articles/${testArticle.id}")
+
+            // ASSERT
+            assertEquals(HttpStatusCode.NotFound, response.status)
+            assertTrue(response.bodyAsText().contains("Sorry, this article no longer exists"))
         }
-
-        val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
-
-        // Mock db to get an article but return null value
-        coEvery { mockDB.getArticleById(testArticle.id) } returns null
-
-        // DO
-        val response = client.get("/articles/${testArticle.id}")
-
-        // ASSERT
-        assertEquals(HttpStatusCode.NotFound, response.status)
-        assertTrue(response.bodyAsText().contains("Sorry, this article no longer exists"))
-    }
 
     @Test
     fun `display article to edit shows the edit page`() = configuredTestApplication {
@@ -215,7 +205,6 @@ class ApplicationTest {
 
         val title = "Edit Me Article"
         val body = "I'm so lonely!"
-
 
         val testArticle = Article.newEntry(title, body, PUBLISHDATE)
 
@@ -230,125 +219,117 @@ class ApplicationTest {
     }
 
     @Test
-    fun `display article fails to shows the edit page and responds with HTTPS Not Found status`() = configuredTestApplication {
-        // SET UP
-        application {
-            configureRouting(controller)
-            configureTemplating()
+    fun `display article fails to shows the edit page and responds with HTTPS Not Found status`() =
+        configuredTestApplication {
+            // SET UP
+            application {
+                configureRouting(controller)
+                configureTemplating()
+            }
+
+            val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
+
+            // Mock db to get an article but return null value
+            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+
+            // DO
+            val response = client.get("/articles/${testArticle.id}/edit")
+
+            // ASSERT
+            assertEquals(HttpStatusCode.NotFound, response.status)
+            assertTrue(response.bodyAsText().contains("Sorry, this article no longer exists"))
         }
-
-        val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
-
-        // Mock db to get an article but return null value
-        coEvery { mockDB.getArticleById(testArticle.id) } returns null
-
-        // DO
-        val response = client.get("/articles/${testArticle.id}/edit")
-
-        // ASSERT
-        assertEquals(HttpStatusCode.NotFound, response.status)
-        assertTrue(response.bodyAsText().contains("Sorry, this article no longer exists"))
-    }
 
     @Test
-    fun `updating an article updates the article in the db and returns HTTPS Found status `() = configuredTestApplication {
-        // SET UP
-        application {
-            configureRouting(controller)
-            configureTemplating()
+    fun `updating an article updates the article in the db and returns HTTPS Found status `() =
+        configuredTestApplication {
+            // SET UP
+            application {
+                configureRouting(controller)
+                configureTemplating()
+            }
+            val title = "Edit Me Article"
+            val body = "I'm so lonely!"
+            val newTitle = "I'm a new article"
+
+            val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+
+            // Mock db to get an article
+            coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+            // Mock update to return true for success
+            coEvery { mockDB.updateArticle(testArticle) } returns true
+
+            // DO
+            val response = client.post("/articles/${testArticle.id}") {
+                setBody(MultiPartFormDataContent(formData {
+                    append("title", newTitle)
+                    append("body", body)
+                }))
+            }
+
+            // ASSERT
+            assertEquals(HttpStatusCode.Found, response.status)
         }
-        val title = "Edit Me Article"
-        val body = "I'm so lonely!"
-        val newTitle = "I'm a new article"
-
-        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
-
-        // Mock db to get an article
-        coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
-        // Mock update to return true for success
-        coEvery { mockDB.updateArticle(testArticle) } returns true
-
-        // DO
-        val response = client.post("/articles/${testArticle.id}") {
-            setBody(
-                MultiPartFormDataContent(
-                    formData {
-                        append("title", newTitle)
-                        append("body", body)
-                    }
-                )
-            )
-        }
-
-        // ASSERT
-        assertEquals(HttpStatusCode.Found, response.status)
-    }
 
     @Test
-    fun `updating an article fails to update in the db and returns HTTPS Not Modified status `() = configuredTestApplication {
-        // SET UP
-        application {
-            configureRouting(controller)
-            configureTemplating()
+    fun `updating an article fails to update in the db and returns HTTPS Not Modified status `() =
+        configuredTestApplication {
+            // SET UP
+            application {
+                configureRouting(controller)
+                configureTemplating()
+            }
+            val newTitle = "I'm a new article"
+
+            val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
+
+            // Mock db to get an article
+            coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+            // Mock update to return false for failure
+            coEvery { mockDB.updateArticle(testArticle) } returns false
+
+            // DO
+            val response = client.post("/articles/${testArticle.id}") {
+                setBody(MultiPartFormDataContent(formData {
+                    append("title", newTitle)
+                    append("body", "null")
+                }))
+            }
+
+            // ASSERT
+            assertEquals(HttpStatusCode.NotModified, response.status)
+            assertTrue(response.bodyAsText().contains("Failed to update the article, please try again."))
         }
-        val newTitle = "I'm a new article"
-
-        val testArticle = Article.newEntry("null", "null", PUBLISHDATE)
-
-        // Mock db to get an article
-        coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
-        // Mock update to return false for failure
-        coEvery { mockDB.updateArticle(testArticle) } returns false
-
-        // DO
-        val response = client.post("/articles/${testArticle.id}") {
-            setBody(
-                MultiPartFormDataContent(
-                    formData {
-                        append("title", newTitle)
-                        append("body", "null")
-                    }
-                )
-            )
-        }
-
-        // ASSERT
-        assertEquals(HttpStatusCode.NotModified, response.status)
-        assertTrue(response.bodyAsText().contains("Failed to update the article, please try again."))
-    }
 
     @Test
-    fun `updating an article fails due to article not found and returns HTTPS Bad Request status `() = configuredTestApplication {
-        // SET UP
-        application {
-            configureRouting(controller)
-            configureTemplating()
+    fun `updating an article fails due to article not found and returns HTTPS Bad Request status `() =
+        configuredTestApplication {
+            // SET UP
+            application {
+                configureRouting(controller)
+                configureTemplating()
+            }
+            val title = "I don't exist"
+            val body = "I'm not real"
+            val newTitle = "I will fail"
+
+            val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+
+            // Mock db to get an article but doesn't find it
+            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+
+            // DO
+            val response = client.post("/articles/${testArticle.id}") {
+                setBody(MultiPartFormDataContent(formData {
+                    append("title", newTitle)
+                    append("body", body)
+                }))
+            }
+
+            // ASSERT
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+            assertTrue(response.bodyAsText().contains("Sorry, this article no longer exists"))
         }
-        val title = "I don't exist"
-        val body = "I'm not real"
-        val newTitle = "I will fail"
-
-        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
-
-        // Mock db to get an article but doesn't find it
-        coEvery { mockDB.getArticleById(testArticle.id) } returns null
-
-        // DO
-        val response = client.post("/articles/${testArticle.id}") {
-            setBody(
-                MultiPartFormDataContent(
-                    formData {
-                        append("title", newTitle)
-                        append("body", body)
-                    }
-                )
-            )
-        }
-
-        // ASSERT
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertTrue(response.bodyAsText().contains("Sorry, this article no longer exists"))
-    }
 
     @Test
     fun `deleting an article succeeds and returns HTTPS Found status `() = configuredTestApplication {
@@ -402,29 +383,30 @@ class ApplicationTest {
     }
 
     @Test
-    fun `deleting an article fails due to article not found and returns HTTPS Bad Request status `() = configuredTestApplication {
-        // SET UP
-        application {
-            configureRouting(controller)
-            configureTemplating()
+    fun `deleting an article fails due to article not found and returns HTTPS Bad Request status `() =
+        configuredTestApplication {
+            // SET UP
+            application {
+                configureRouting(controller)
+                configureTemplating()
+            }
+            val title = "I don't exist"
+            val body = "I'm not real"
+
+            val testArticle = Article.newEntry(title, body, PUBLISHDATE)
+
+            // Mock db to get an article but doesn't find it
+            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+
+            // DO
+            val response = client.delete("/articles/${testArticle.id}") {
+                setBody(MultiPartFormDataContent(formData { }))
+            }
+
+            // ASSERT
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+            assertTrue(
+                response.bodyAsText().contains("Sorry, someone beat you to the punch. We couldn't find that article")
+            )
         }
-        val title = "I don't exist"
-        val body = "I'm not real"
-
-        val testArticle = Article.newEntry(title, body, PUBLISHDATE)
-
-        // Mock db to get an article but doesn't find it
-        coEvery { mockDB.getArticleById(testArticle.id) } returns null
-
-        // DO
-        val response = client.delete("/articles/${testArticle.id}") {
-            setBody(MultiPartFormDataContent(formData { }))
-        }
-
-        // ASSERT
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertTrue(
-            response.bodyAsText().contains("Sorry, someone beat you to the punch. We couldn't find that article")
-        )
-    }
 }

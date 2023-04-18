@@ -10,7 +10,6 @@ class ArticleTest {
     var body: String = "This article is the bee knees, balls to the wall"
     var date: LocalDateTime = LocalDateTime.parse("2023-04-14T12:41:00")
 
-
     /**
      * Tests that a new articles model is created when newEntry is called
      */

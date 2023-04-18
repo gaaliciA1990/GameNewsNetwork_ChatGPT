@@ -29,7 +29,6 @@ class ArticlesDatabaseTest {
     lateinit var publisher: CoroutineFindPublisher<Article>
     private var date: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
 
-
     @BeforeTest
     fun beforeEach() {
         mockCollection = mockk()
