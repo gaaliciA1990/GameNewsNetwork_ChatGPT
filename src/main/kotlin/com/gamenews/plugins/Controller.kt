@@ -9,6 +9,8 @@ import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.util.getOrFail
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * This class handles the calls for all routes
@@ -16,6 +18,10 @@ import io.ktor.server.util.getOrFail
 class Controller(
     private val db: ArticlesDatabase
 ) {
+    companion object {
+        const val SKIP = 10
+        const val LIMIT = 10
+    }
 
     /**
      * Handles calls to show all articles
@@ -54,9 +60,13 @@ class Controller(
         val formParams = call.receiveParameters()
         val title = formParams.getOrFail("title")
         val body = formParams.getOrFail("body")
+        val date = formParams.getOrFail("publish date")
+
+        var datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        var publishDate = LocalDateTime.parse(date, datePattern)
 
         // Create the article model with the form params, ID is autocreated
-        val newArticle = Article.newEntry(title, body)
+        val newArticle = Article.newEntry(title, body, publishDate)
 
         // If the article is created successfully, redirect to the article
         if (db.createArticle(newArticle)) {
