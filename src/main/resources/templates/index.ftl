@@ -2,7 +2,7 @@
 <#import "_layout.ftl" as layout/>
 <@layout.header>
 
-    <#list articles?reverse as article>
+    <#list articles as article>
         <div>
             <h3>
                 <a href="/articles/${article.id}">${article.title}</a>
