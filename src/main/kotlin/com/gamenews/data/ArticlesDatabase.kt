@@ -9,15 +9,21 @@ import org.litote.kmongo.coroutine.CoroutineCollection
 class ArticlesDatabase(
     private val articles: CoroutineCollection<Article>
 ) {
-
     /**
      * Query all articles in the db
      */
-    suspend fun getAllArticles(pageNum: Int, limit: Int): List<Article> {
+    suspend fun getArticlesCount(): Int {
+        return articles.countDocuments().toInt()
+    }
+
+    /**
+     * Query a set of articles in the db based on page size (number of articles) and number of
+     * pages
+     */
+    suspend fun getSetOfArticles(pageNumber: Int, pageSize: Int): List<Article> {
         return articles.find()
-            .skip(skip = (pageNum - 1) * limit)
-            .limit(limit = limit)
-            .partial(true)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
             .descendingSort(Article::publishDate)
             .toList()
     }

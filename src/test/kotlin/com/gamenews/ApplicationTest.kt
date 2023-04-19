@@ -65,9 +65,11 @@ class ApplicationTest {
             configureRouting(controller)
             configureTemplating()
         }
+        val articleCount = 3
 
         // mock the articles in the mock DB
-        coEvery { mockDB.getAllArticles(any(), any()) } returns listOf(mockk(relaxed = true), mockk(relaxed = true))
+        coEvery { mockDB.getArticlesCount() } returns articleCount
+        coEvery { mockDB.getSetOfArticles(any(), any()) } returns listOf(mockk(relaxed = true), mockk(relaxed = true))
 
         // DO
         val response = client.get("/")

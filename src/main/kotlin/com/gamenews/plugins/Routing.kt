@@ -22,7 +22,7 @@ fun Application.configureRouting(
              * Show a list of articles.
              */
             get {
-                controller.displayAllArticles(this.call)
+                controller.displayArticlePages(this.call)
             }
 
             /**

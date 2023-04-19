@@ -9,6 +9,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
+import org.bson.conversions.Bson
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.CoroutineFindPublisher
 import java.time.LocalDateTime
@@ -43,7 +44,21 @@ class ArticlesDatabaseTest {
     }
 
     @Test
-    fun `getAllArticles returns a list of articles in the db we added`() = runTest {
+    fun `getArticlesCount returns a count of all articles in the DB`() = runTest {
+        // SET UP
+        val count = 6L
+
+        coEvery { mockCollection.countDocuments(any<Bson>(), any()) } returns count
+
+        // DO
+        val articleCount = articlesDB.getArticlesCount()
+
+        // ASSERT
+        assertEquals(count.toInt(), articleCount)
+    }
+
+    @Test
+    fun `getSetOfArticles returns a list of articles based on page size and number we want`() = runTest {
         // SET UP
         val article1: Article = Article.newEntry("Test 1", "Test Body", date)
         val article2: Article = Article.newEntry("Test 2", "Test Body 2", date)
@@ -51,12 +66,11 @@ class ArticlesDatabaseTest {
         coEvery { mockCollection.find() } returns publisher
         coEvery { publisher.skip(any()) } returns publisher
         coEvery { publisher.limit(any()) } returns publisher
-        coEvery { publisher.partial(any()) } returns publisher
         coEvery { publisher.descendingSort(any()) } returns publisher
-        coEvery { publisher.toList() } returns listOf(article1, article2)
+        coEvery { publisher.toList() } returns listOf(article1, article2) // assuming they are the newest
 
         // DO
-        val listOfArticles = articlesDB.getAllArticles(2, 2)
+        val listOfArticles = articlesDB.getSetOfArticles(1, 2)
 
         // ASSERT
         assertFalse(listOfArticles.isEmpty())
@@ -70,12 +84,11 @@ class ArticlesDatabaseTest {
         coEvery { mockCollection.find() } returns publisher
         coEvery { publisher.skip(any()) } returns publisher
         coEvery { publisher.limit(any()) } returns publisher
-        coEvery { publisher.partial(any()) } returns publisher
         coEvery { publisher.descendingSort(any()) } returns publisher
         coEvery { publisher.toList() } returns emptyList()
 
         // DO
-        val listOfArticles = articlesDB.getAllArticles(2, 2)
+        val listOfArticles = articlesDB.getSetOfArticles(1, 2)
 
         // ASSERT
         assertTrue(listOfArticles.isEmpty())

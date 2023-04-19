@@ -11,6 +11,7 @@ import io.ktor.server.response.respondRedirect
 import io.ktor.server.util.getOrFail
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.floor
 
 /**
  * This class handles the calls for all routes
@@ -19,21 +20,34 @@ class Controller(
     private val db: ArticlesDatabase
 ) {
     companion object {
-        const val PAGENUM = 1
-        const val LIMIT = 3
+        const val PAGESIZE = 3
     }
 
     /**
-     * Handles calls to show all articles
+     * Handles calls to show a page of articles on the home screen based
+     * on page size (number of articles) and page number
      */
-    suspend fun displayAllArticles(call: ApplicationCall) {
-        val allArticles = db.getAllArticles(PAGENUM, LIMIT)
+    suspend fun displayArticlePages(call: ApplicationCall) {
+        // Get the page number from the query param or default to 1
+        val pageNumber = call.parameters["page"]?.toIntOrNull() ?: 1
+        // get all the articles we have
+        val allArticles = db.getArticlesCount()
+        // get the set of articles we want per page
+        val articlesPerPage = db.getSetOfArticles(pageNumber, PAGESIZE)
+        // Set our page count based on total articles we have
+        val pageCount = floor((allArticles + PAGESIZE - 1) / PAGESIZE.toDouble()).toInt()
 
         call.respond(
             HttpStatusCode.OK,
             FreeMarkerContent(
                 "index.ftl",
-                mapOf("articles" to allArticles)
+                mapOf(
+                    "articles" to articlesPerPage,
+                    "pageSize" to PAGESIZE,
+                    "pageNumber" to pageNumber,
+                    "articleCount" to allArticles,
+                    "pageCount" to pageCount
+                )
             )
         )
     }
