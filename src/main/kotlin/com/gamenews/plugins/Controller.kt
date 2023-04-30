@@ -9,6 +9,9 @@ import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.util.getOrFail
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import kotlin.math.floor
 
 /**
  * This class handles the calls for all routes
@@ -16,18 +19,35 @@ import io.ktor.server.util.getOrFail
 class Controller(
     private val db: ArticlesDatabase
 ) {
+    companion object {
+        const val PAGESIZE = 3
+    }
 
     /**
-     * Handles calls to show all articles
+     * Handles calls to show a page of articles on the home screen based
+     * on page size (number of articles) and page number
      */
-    suspend fun displayAllArticles(call: ApplicationCall) {
-        val allArticles = db.getAllArticles()
+    suspend fun displayArticlePages(call: ApplicationCall) {
+        // Get the page number from the query param or default to 1
+        val pageNumber = call.parameters["page"]?.toIntOrNull() ?: 1
+        // get all the articles we have
+        val allArticles = db.getArticlesCount()
+        // get the set of articles we want per page
+        val articlesPerPage = db.getSetOfArticles(pageNumber, PAGESIZE)
+        // Set our page count based on total articles we have
+        val pageCount = floor((allArticles + PAGESIZE - 1) / PAGESIZE.toDouble()).toInt()
 
         call.respond(
             HttpStatusCode.OK,
             FreeMarkerContent(
                 "index.ftl",
-                mapOf("articles" to allArticles)
+                mapOf(
+                    "articles" to articlesPerPage,
+                    "pageSize" to PAGESIZE,
+                    "pageNumber" to pageNumber,
+                    "articleCount" to allArticles,
+                    "pageCount" to pageCount
+                )
             )
         )
     }
@@ -52,11 +72,15 @@ class Controller(
      */
     suspend fun saveNewArticle(call: ApplicationCall) {
         val formParams = call.receiveParameters()
-        val title = formParams.getOrFail("title")
-        val body = formParams.getOrFail("body")
+        val title = formParams.getOrFail("title").trim()
+        val body = formParams.getOrFail("body").trim()
+        val date = formParams.getOrFail("publish_date").trim()
+
+        var datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        var publishDate = LocalDateTime.parse(date, datePattern)
 
         // Create the article model with the form params, ID is autocreated
-        val newArticle = Article.newEntry(title, body)
+        val newArticle = Article.newEntry(title, body, publishDate)
 
         // If the article is created successfully, redirect to the article
         if (db.createArticle(newArticle)) {
@@ -136,8 +160,8 @@ class Controller(
         }
 
         // update the title and body of the article, if not null
-        article.title = formParams.getOrFail("title")
-        article.body = formParams.getOrFail("body")
+        article.title = formParams.getOrFail("title").trim()
+        article.body = formParams.getOrFail("body").trim()
 
         if (db.updateArticle(article)) {
             call.respondRedirect(

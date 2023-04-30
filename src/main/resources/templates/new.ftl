@@ -4,10 +4,22 @@
         <h3>Create new article</h3>
         <form action="/articles" method="post">
             <p>
-                <input type="text" name="title">
+                Enter Title
             </p>
             <p>
-                <textarea name="body"></textarea>
+                <input type="text" name="title" required>
+            </p>
+            <p>
+                Enter Content
+            </p>
+            <p>
+                <textarea name="body" required></textarea>
+            </p>
+            <p>
+                Enter Publish Date <br> [YYYY-MM-DD HH:MM:SS]
+            </p>
+            <p>
+                <input type="text" name="publish_date" required>
             </p>
             <p>
                 <input type="submit">

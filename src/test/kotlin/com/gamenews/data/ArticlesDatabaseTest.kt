@@ -9,8 +9,10 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
+import org.bson.conversions.Bson
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.CoroutineFindPublisher
+import java.time.LocalDateTime
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -26,6 +28,7 @@ class ArticlesDatabaseTest {
     lateinit var mockCollection: CoroutineCollection<Article>
     lateinit var articlesDB: ArticlesDatabase
     lateinit var publisher: CoroutineFindPublisher<Article>
+    private var date: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
 
     @BeforeTest
     fun beforeEach() {
@@ -41,16 +44,33 @@ class ArticlesDatabaseTest {
     }
 
     @Test
-    fun `getAllArticles returns a list of articles in the db we added`() = runTest {
+    fun `getArticlesCount returns a count of all articles in the DB`() = runTest {
         // SET UP
-        val article1: Article = Article.newEntry("Test 1", "Test Body")
-        val article2: Article = Article.newEntry("Test 2", "Test Body 2")
+        val count = 6L
 
-        coEvery { mockCollection.find() } returns publisher
-        coEvery { publisher.toList() } returns listOf(article1, article2)
+        coEvery { mockCollection.countDocuments(any<Bson>(), any()) } returns count
 
         // DO
-        val listOfArticles = articlesDB.getAllArticles()
+        val articleCount = articlesDB.getArticlesCount()
+
+        // ASSERT
+        assertEquals(count.toInt(), articleCount)
+    }
+
+    @Test
+    fun `getSetOfArticles returns a list of articles based on page size and number we want`() = runTest {
+        // SET UP
+        val article1: Article = Article.newEntry("Test 1", "Test Body", date)
+        val article2: Article = Article.newEntry("Test 2", "Test Body 2", date)
+
+        coEvery { mockCollection.find() } returns publisher
+        coEvery { publisher.skip(any()) } returns publisher
+        coEvery { publisher.limit(any()) } returns publisher
+        coEvery { publisher.descendingSort(any()) } returns publisher
+        coEvery { publisher.toList() } returns listOf(article1, article2) // assuming they are the newest
+
+        // DO
+        val listOfArticles = articlesDB.getSetOfArticles(1, 2)
 
         // ASSERT
         assertFalse(listOfArticles.isEmpty())
@@ -62,10 +82,13 @@ class ArticlesDatabaseTest {
     fun `getAllArticles returns an empty list of articles`() = runTest {
         // SET UP
         coEvery { mockCollection.find() } returns publisher
+        coEvery { publisher.skip(any()) } returns publisher
+        coEvery { publisher.limit(any()) } returns publisher
+        coEvery { publisher.descendingSort(any()) } returns publisher
         coEvery { publisher.toList() } returns emptyList()
 
         // DO
-        val listOfArticles = articlesDB.getAllArticles()
+        val listOfArticles = articlesDB.getSetOfArticles(1, 2)
 
         // ASSERT
         assertTrue(listOfArticles.isEmpty())
@@ -74,7 +97,7 @@ class ArticlesDatabaseTest {
     @Test
     fun `createArticle adds the new article to the db with the correct acknowledge`() = runTest {
         // SET UP
-        val article: Article = Article.newEntry("New Article", "New test body")
+        val article: Article = Article.newEntry("New Article", "New test body", date)
         val ackResult = mockk<InsertOneResult>()
 
         coEvery { mockCollection.insertOne(article, any()) } returns ackResult
@@ -90,7 +113,7 @@ class ArticlesDatabaseTest {
     @Test
     fun `getArticleById returns the article we query for`() = runTest {
         // SET UP
-        val article1: Article = Article.newEntry("Test 1", "Test Body")
+        val article1: Article = Article.newEntry("Test 1", "Test Body", date)
 
         coEvery { mockCollection.findOneById(article1.id) } returns article1
 
@@ -106,7 +129,7 @@ class ArticlesDatabaseTest {
     @Test
     fun `updateArticle changes the title of the article in the db`() = runTest {
         // SET UP
-        val article1: Article = Article.newEntry("Test 1", "Test Body")
+        val article1: Article = Article.newEntry("Test 1", "Test Body", date)
         val updatedArticle = article1.copy(title = "New Test 1")
         val ackResult = mockk<UpdateResult>()
 
@@ -126,7 +149,7 @@ class ArticlesDatabaseTest {
     @Test
     fun `updateArticle returns false when the article is not in the db`() = runTest {
         // SET UP
-        val article1: Article = Article.newEntry("Test 1", "Test Body")
+        val article1: Article = Article.newEntry("Test 1", "Test Body", date)
         val updatedArticle = article1.copy(title = "New Test 1")
         val ackResult = mockk<UpdateResult>()
 
@@ -143,7 +166,7 @@ class ArticlesDatabaseTest {
     @Test
     fun `deleteArticle deletes the article in the db by ID`() = runTest {
         // SET UP
-        val article1: Article = Article.newEntry("Test 1", "Test Body")
+        val article1: Article = Article.newEntry("Test 1", "Test Body", date)
         val ackResult = mockk<DeleteResult>()
 
         // make sure our article is returned
@@ -162,7 +185,7 @@ class ArticlesDatabaseTest {
     @Test
     fun `deleteArticle returns false when the article is not in the db`() = runTest {
         // SET UP
-        val article1: Article = Article.newEntry("Test 1", "Test Body")
+        val article1: Article = Article.newEntry("Test 1", "Test Body", date)
         val ackResult = mockk<DeleteResult>()
 
         // make sure our article isn't found
