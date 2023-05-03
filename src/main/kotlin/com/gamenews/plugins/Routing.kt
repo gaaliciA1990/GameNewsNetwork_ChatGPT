@@ -3,7 +3,6 @@ package com.gamenews.plugins
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.response.respondRedirect
-import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -56,7 +55,7 @@ fun Application.configureRouting(
             /**
              * Update an article
              */
-            post("{id}") {
+            post("update/{id}") {
                 controller.updateArticleById(this.call)
             }
 
@@ -64,7 +63,7 @@ fun Application.configureRouting(
              * Delete an article
              */
 
-            delete("{id}") {
+            post("delete/{id}") {
                 controller.deleteArticleById(this.call)
             }
         }
