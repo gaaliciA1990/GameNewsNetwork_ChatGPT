@@ -7,7 +7,6 @@ import com.gamenews.models.Article
 import com.gamenews.plugins.Controller
 import com.gamenews.plugins.configureRouting
 import com.gamenews.plugins.configureTemplating
-import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
@@ -270,7 +269,7 @@ class ApplicationTest {
             coEvery { mockDB.updateArticle(testArticle) } returns true
 
             // DO
-            val response = client.post("/articles/${testArticle.id}") {
+            val response = client.post("/articles/update/${testArticle.id}") {
                 setBody(
                     MultiPartFormDataContent(
                         formData {
@@ -303,7 +302,7 @@ class ApplicationTest {
             coEvery { mockDB.updateArticle(testArticle) } returns false
 
             // DO
-            val response = client.post("/articles/${testArticle.id}") {
+            val response = client.post("/articles/update/${testArticle.id}") {
                 setBody(
                     MultiPartFormDataContent(
                         formData {
@@ -337,7 +336,7 @@ class ApplicationTest {
             coEvery { mockDB.getArticleById(testArticle.id) } returns null
 
             // DO
-            val response = client.post("/articles/${testArticle.id}") {
+            val response = client.post("/articles/update/${testArticle.id}") {
                 setBody(
                     MultiPartFormDataContent(
                         formData {
@@ -370,7 +369,7 @@ class ApplicationTest {
         coEvery { mockDB.deleteArticle(testArticle.id) } returns true
 
         // DO
-        val response = client.delete("/articles/${testArticle.id}") {
+        val response = client.post("/articles/delete/${testArticle.id}") {
             setBody(MultiPartFormDataContent(formData { }))
         }
 
@@ -395,7 +394,7 @@ class ApplicationTest {
         coEvery { mockDB.deleteArticle(testArticle.id) } returns false
 
         // DO
-        val response = client.delete("/articles/${testArticle.id}") {
+        val response = client.post("/articles/delete/${testArticle.id}") {
             setBody(MultiPartFormDataContent(formData { }))
         }
 
@@ -421,7 +420,7 @@ class ApplicationTest {
             coEvery { mockDB.getArticleById(testArticle.id) } returns null
 
             // DO
-            val response = client.delete("/articles/${testArticle.id}") {
+            val response = client.post("/articles/delete/${testArticle.id}") {
                 setBody(MultiPartFormDataContent(formData { }))
             }
 
