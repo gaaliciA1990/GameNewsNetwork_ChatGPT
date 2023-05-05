@@ -37,6 +37,8 @@ class Controller(
         // Set our page count based on total articles we have
         val pageCount = floor((allArticles + PAGESIZE - 1) / PAGESIZE.toDouble()).toInt()
 
+        val isAdmin = true
+
         call.respond(
             HttpStatusCode.OK,
             FreeMarkerContent(
@@ -46,7 +48,8 @@ class Controller(
                     "pageSize" to PAGESIZE,
                     "pageNumber" to pageNumber,
                     "articleCount" to allArticles,
-                    "pageCount" to pageCount
+                    "pageCount" to pageCount,
+                    "admin" to isAdmin,
                 )
             )
         )
