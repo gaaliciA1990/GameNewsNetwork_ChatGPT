@@ -6,7 +6,7 @@ import org.litote.kmongo.coroutine.CoroutineCollection
 /**
  * Class for our articles database queries
  */
-class ArticlesDatabase(
+class ArticlesRepository(
     private val articles: CoroutineCollection<Article>
 ) {
     /**
