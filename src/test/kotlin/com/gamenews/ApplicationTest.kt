@@ -2,7 +2,7 @@
 
 package com.gamenews
 
-import com.gamenews.data.ArticlesDatabase
+import com.gamenews.data.ArticlesRepository
 import com.gamenews.models.Article
 import com.gamenews.plugins.Controller
 import com.gamenews.plugins.configureRouting
@@ -29,7 +29,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ApplicationTest {
-    lateinit var mockDB: ArticlesDatabase
+    lateinit var mockDB: ArticlesRepository
     lateinit var controller: Controller
     private val publishDate: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
 
