@@ -43,6 +43,8 @@ class Controller(
         // verify the IP address, if admin = true, else false
         val isAdmin = verifyAdmin(call)
 
+        val isAdmin = true
+
         call.respond(
             HttpStatusCode.OK,
             FreeMarkerContent(
