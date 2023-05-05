@@ -1,6 +1,8 @@
 package com.gamenews
 
-import com.gamenews.data.ArticlesDatabase
+import com.gamenews.data.AdminRepository
+import com.gamenews.data.ArticlesRepository
+import com.gamenews.models.Admin
 import com.gamenews.models.Article
 import com.gamenews.plugins.Controller
 import com.gamenews.plugins.configureRouting
@@ -13,11 +15,13 @@ fun main(args: Array<String>) = io.ktor.server.netty.EngineMain.main(args)
 
 fun Application.module() {
     val client = KMongo.createClient().coroutine
-    val database = client.getDatabase("ArticlesDatabase")
+    val database = client.getDatabase("GNNDatabase")
     val articles = database.getCollection<Article>()
+    val admins = database.getCollection<Admin>()
 
-    val articlesDB = ArticlesDatabase(articles)
-    val controller = Controller(articlesDB)
+    val articlesRepo = ArticlesRepository(articles)
+    val adminRepo = AdminRepository(admins)
+    val controller = Controller(articlesRepo, adminRepo)
 
     configureRouting(controller)
     configureTemplating()
