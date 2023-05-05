@@ -16,7 +16,7 @@ data class Article(
 ) {
     companion object {
         /**
-         * Create a new article with a new object id, title, and body
+         * Create a new article with required variables
          */
         fun newEntry(
             title: String,
