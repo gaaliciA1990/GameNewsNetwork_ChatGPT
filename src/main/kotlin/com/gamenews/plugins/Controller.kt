@@ -1,6 +1,7 @@
 package com.gamenews.plugins
 
-import com.gamenews.data.ArticlesDatabase
+import com.gamenews.data.AdminRepository
+import com.gamenews.data.ArticlesRepository
 import com.gamenews.models.Article
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
@@ -17,7 +18,8 @@ import kotlin.math.floor
  * This class handles the calls for all routes
  */
 class Controller(
-    private val db: ArticlesDatabase
+    private val articleRepo: ArticlesRepository,
+    private val adminRepo: AdminRepository
 ) {
     companion object {
         const val PAGESIZE = 3
@@ -31,9 +33,9 @@ class Controller(
         // Get the page number from the query param or default to 1
         val pageNumber = call.parameters["page"]?.toIntOrNull() ?: 1
         // get all the articles we have
-        val allArticles = db.getArticlesCount()
+        val allArticles = articleRepo.getArticlesCount()
         // get the set of articles we want per page
-        val articlesPerPage = db.getSetOfArticles(pageNumber, PAGESIZE)
+        val articlesPerPage = articleRepo.getSetOfArticles(pageNumber, PAGESIZE)
         // Set our page count based on total articles we have
         val pageCount = floor((allArticles + PAGESIZE - 1) / PAGESIZE.toDouble()).toInt()
 
@@ -86,7 +88,7 @@ class Controller(
         val newArticle = Article.newEntry(title, body, publishDate)
 
         // If the article is created successfully, redirect to the article
-        if (db.createArticle(newArticle)) {
+        if (articleRepo.createArticle(newArticle)) {
             call.respondRedirect(
                 "/articles/${newArticle.id}"
             )
@@ -104,7 +106,7 @@ class Controller(
      */
     suspend fun displaySingleArticle(call: ApplicationCall) {
         val id = call.parameters.getOrFail<String>("id")
-        val article = db.getArticleById(id)
+        val article = articleRepo.getArticleById(id)
 
         article?.let {
             call.respond(
@@ -126,7 +128,7 @@ class Controller(
      */
     suspend fun displayEditArticle(call: ApplicationCall) {
         val id = call.parameters.getOrFail<String>("id")
-        val article = db.getArticleById(id)
+        val article = articleRepo.getArticleById(id)
 
         if (article == null) {
             call.respond(
@@ -151,7 +153,7 @@ class Controller(
         val id = call.parameters.getOrFail<String>("id")
         val formParams = call.receiveParameters()
 
-        val article = db.getArticleById(id)
+        val article = articleRepo.getArticleById(id)
 
         // Make sure the article still exists in case it's deleted before edit clicked
         if (article == null) {
@@ -166,7 +168,7 @@ class Controller(
         article.title = formParams.getOrFail("title").trim()
         article.body = formParams.getOrFail("body").trim()
 
-        if (db.updateArticle(article)) {
+        if (articleRepo.updateArticle(article)) {
             call.respondRedirect(
                 "/articles/$id"
             )
@@ -183,7 +185,7 @@ class Controller(
      */
     suspend fun deleteArticleById(call: ApplicationCall) {
         val id = call.parameters.getOrFail<String>("id")
-        val article = db.getArticleById(id)
+        val article = articleRepo.getArticleById(id)
 
         // Make sure the article still exists in case it's deleted before delete clicked
         if (article == null) {
@@ -194,7 +196,7 @@ class Controller(
             return
         }
         // If the articles was successfully deleted, redirect back to the articles page
-        if (db.deleteArticle(article.id)) {
+        if (articleRepo.deleteArticle(article.id)) {
             call.respondRedirect(
                 "/articles"
             )
