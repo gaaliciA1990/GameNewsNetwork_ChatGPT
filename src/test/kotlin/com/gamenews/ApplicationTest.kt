@@ -2,6 +2,7 @@
 
 package com.gamenews
 
+import com.gamenews.data.AdminRepository
 import com.gamenews.data.ArticlesRepository
 import com.gamenews.models.Article
 import com.gamenews.plugins.Controller
@@ -29,14 +30,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ApplicationTest {
-    lateinit var mockDB: ArticlesRepository
+    lateinit var mockArticleRepo: ArticlesRepository
+    lateinit var mockAdminRepo: AdminRepository
     lateinit var controller: Controller
     private val publishDate: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
 
     @BeforeTest
     fun beforeEach() {
-        mockDB = mockk()
-        controller = Controller(mockDB)
+        mockArticleRepo = mockk()
+        mockAdminRepo = mockk()
+        controller = Controller(mockArticleRepo, mockAdminRepo)
     }
 
     @AfterTest
@@ -67,8 +70,8 @@ class ApplicationTest {
         val articleCount = 3
 
         // mock the articles in the mock DB
-        coEvery { mockDB.getArticlesCount() } returns articleCount
-        coEvery { mockDB.getSetOfArticles(any(), any()) } returns listOf(mockk(relaxed = true), mockk(relaxed = true))
+        coEvery { mockArticleRepo.getArticlesCount() } returns articleCount
+        coEvery { mockArticleRepo.getSetOfArticles(any(), any()) } returns listOf(mockk(relaxed = true), mockk(relaxed = true))
 
         // DO
         val response = client.get("/")
@@ -106,7 +109,7 @@ class ApplicationTest {
         val date = "2023-04-16 16:41:00"
 
         // Mock db to create article
-        coEvery { mockDB.createArticle(any()) } returns true
+        coEvery { mockArticleRepo.createArticle(any()) } returns true
 
         // DO
         val response = client.post("/articles") {
@@ -138,7 +141,7 @@ class ApplicationTest {
         val date = "2023-04-16 16:41:00"
 
         // Mock db to create article
-        coEvery { mockDB.createArticle(any()) } returns false
+        coEvery { mockArticleRepo.createArticle(any()) } returns false
 
         // DO
         val response = client.post("/articles") {
@@ -172,7 +175,7 @@ class ApplicationTest {
             val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article
-            coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
 
             // DO
             val response = client.get("/articles/${testArticle.id}")
@@ -194,7 +197,7 @@ class ApplicationTest {
             val testArticle = Article.newEntry("null", "null", publishDate)
 
             // Mock db to get an article but return null value
-            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns null
 
             // DO
             val response = client.get("/articles/${testArticle.id}")
@@ -218,7 +221,7 @@ class ApplicationTest {
         val testArticle = Article.newEntry(title, body, publishDate)
 
         // Mock db to get an article
-        coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+        coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
 
         // DO
         val response = client.get("/articles/${testArticle.id}/edit")
@@ -239,7 +242,7 @@ class ApplicationTest {
             val testArticle = Article.newEntry("null", "null", publishDate)
 
             // Mock db to get an article but return null value
-            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns null
 
             // DO
             val response = client.get("/articles/${testArticle.id}/edit")
@@ -264,9 +267,9 @@ class ApplicationTest {
             val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article
-            coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
             // Mock update to return true for success
-            coEvery { mockDB.updateArticle(testArticle) } returns true
+            coEvery { mockArticleRepo.updateArticle(testArticle) } returns true
 
             // DO
             val response = client.post("/articles/update/${testArticle.id}") {
@@ -297,9 +300,9 @@ class ApplicationTest {
             val testArticle = Article.newEntry("null", "null", publishDate)
 
             // Mock db to get an article
-            coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
             // Mock update to return false for failure
-            coEvery { mockDB.updateArticle(testArticle) } returns false
+            coEvery { mockArticleRepo.updateArticle(testArticle) } returns false
 
             // DO
             val response = client.post("/articles/update/${testArticle.id}") {
@@ -333,7 +336,7 @@ class ApplicationTest {
             val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article but doesn't find it
-            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns null
 
             // DO
             val response = client.post("/articles/update/${testArticle.id}") {
@@ -365,8 +368,8 @@ class ApplicationTest {
         val testArticle = Article.newEntry(title, body, publishDate)
 
         // Mock db to get an article but doesn't find it
-        coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
-        coEvery { mockDB.deleteArticle(testArticle.id) } returns true
+        coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
+        coEvery { mockArticleRepo.deleteArticle(testArticle.id) } returns true
 
         // DO
         val response = client.post("/articles/delete/${testArticle.id}") {
@@ -390,8 +393,8 @@ class ApplicationTest {
         val testArticle = Article.newEntry(title, body, publishDate)
 
         // Mock db to get an article but doesn't find it
-        coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
-        coEvery { mockDB.deleteArticle(testArticle.id) } returns false
+        coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
+        coEvery { mockArticleRepo.deleteArticle(testArticle.id) } returns false
 
         // DO
         val response = client.post("/articles/delete/${testArticle.id}") {
@@ -417,7 +420,7 @@ class ApplicationTest {
             val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article but doesn't find it
-            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns null
 
             // DO
             val response = client.post("/articles/delete/${testArticle.id}") {
