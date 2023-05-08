@@ -2,6 +2,7 @@ package com.gamenews.plugins
 
 import com.gamenews.data.AdminRepository
 import com.gamenews.data.ArticlesRepository
+import com.gamenews.exceptions.UnauthorizedAccessException
 import com.gamenews.models.Article
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
@@ -258,7 +259,7 @@ class Controller(
                 HttpStatusCode.NotFound,
                 "Hmmm, that page doesn't appear to exist."
             )
-            throw RuntimeException("Unauthorized Access")
+            throw UnauthorizedAccessException("Unauthorized Access")
         }
     }
 }
