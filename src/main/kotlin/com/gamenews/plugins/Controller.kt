@@ -45,8 +45,6 @@ class Controller(
         // verify the IP address, if admin = true, else false
         val isAdmin = verifyAdmin(call)
 
-        val isAdmin = true
-
         call.respond(
             HttpStatusCode.OK,
             FreeMarkerContent(
@@ -248,7 +246,7 @@ class Controller(
         val isAdmin = adminRepo.getAdminByIp(userIP)
         LOGGER.info("IsAdmin = $isAdmin")
 
-         return isAdmin
+        return isAdmin
     }
 
     /**
