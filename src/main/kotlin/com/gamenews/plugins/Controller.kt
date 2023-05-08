@@ -63,16 +63,8 @@ class Controller(
      * being the new article creation.
      */
     suspend fun displayNewArticlePage(call: ApplicationCall) {
-        // verify the IP address, if admin = true, else false
-        val isAdmin = verifyAdmin(call)
-
-        // If the IP isn't an admin, they don't get to see the page
-        if (!isAdmin) {
-            call.respond(
-                HttpStatusCode.NotFound,
-                "Hmmm, that page doesn't appear to exist."
-            )
-        }
+        // verify the IP address
+        requireAdminOrFail(call)
 
         call.respond(
             HttpStatusCode.OK,
@@ -88,16 +80,8 @@ class Controller(
      * article, otherwise we return a NotModified response
      */
     suspend fun saveNewArticle(call: ApplicationCall) {
-        // verify the IP address, if admin = true, else false
-        val isAdmin = verifyAdmin(call)
-
-        // If the IP isn't an admin, they don't get to see the page
-        if (!isAdmin) {
-            call.respond(
-                HttpStatusCode.NotFound,
-                "Hmmm, that page doesn't appear to exist."
-            )
-        }
+        // verify the IP address
+        requireAdminOrFail(call)
 
         val formParams = call.receiveParameters()
         val title = formParams.getOrFail("title").trim()
@@ -158,16 +142,8 @@ class Controller(
         val id = call.parameters.getOrFail<String>("id")
         val article = articleRepo.getArticleById(id)
 
-        // verify the IP address, if admin = true, else false
-        val isAdmin = verifyAdmin(call)
-
-        // If the IP isn't an admin, they don't get to see the page
-        if (!isAdmin) {
-            call.respond(
-                HttpStatusCode.NotFound,
-                "Hmmm, that page doesn't appear to exist."
-            )
-        }
+        // verify the IP address
+        requireAdminOrFail(call)
 
         if (article == null) {
             call.respond(
@@ -182,7 +158,6 @@ class Controller(
                 "edit.ftl",
                 mapOf(
                     "article" to article,
-                    "admin" to isAdmin,
                 )
             )
         )
@@ -192,16 +167,8 @@ class Controller(
      * Handles calls to update an article
      */
     suspend fun updateArticleById(call: ApplicationCall) {
-        // verify the IP address, if admin = true, else false
-        val isAdmin = verifyAdmin(call)
-
-        // If the IP isn't an admin, they don't get to see the page
-        if (!isAdmin) {
-            call.respond(
-                HttpStatusCode.NotFound,
-                "Hmmm, that page doesn't appear to exist."
-            )
-        }
+        // verify the IP address
+        requireAdminOrFail(call)
 
         val id = call.parameters.getOrFail<String>("id")
         val formParams = call.receiveParameters()
@@ -237,16 +204,8 @@ class Controller(
      * Handles calls to delete an article from the db.
      */
     suspend fun deleteArticleById(call: ApplicationCall) {
-        // verify the IP address, if admin = true, else false
-        val isAdmin = verifyAdmin(call)
-
-        // If the IP isn't an admin, they don't get to see the page
-        if (!isAdmin) {
-            call.respond(
-                HttpStatusCode.NotFound,
-                "Hmmm, that page doesn't appear to exist."
-            )
-        }
+        // verify the IP address
+        requireAdminOrFail(call)
 
         val id = call.parameters.getOrFail<String>("id")
         val article = articleRepo.getArticleById(id)
@@ -285,5 +244,21 @@ class Controller(
         }
         // if IP not in our table, return false
         return false
+    }
+
+    /**
+     * Helper function for checking if user is an Admin to access the feature/page
+     */
+    private suspend fun requireAdminOrFail(call: ApplicationCall) {
+        val isAdmin = verifyAdmin(call)
+
+        // If the IP isn't an admin, they don't get to see the page
+        if (!isAdmin) {
+            call.respond(
+                HttpStatusCode.NotFound,
+                "Hmmm, that page doesn't appear to exist."
+            )
+            throw RuntimeException("Unauthorized Access")
+        }
     }
 }
