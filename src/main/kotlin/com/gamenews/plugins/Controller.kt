@@ -6,6 +6,7 @@ import com.gamenews.models.Article
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.freemarker.FreeMarkerContent
+import io.ktor.server.plugins.origin
 import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
@@ -38,8 +39,8 @@ class Controller(
         val articlesPerPage = articleRepo.getSetOfArticles(pageNumber, PAGESIZE)
         // Set our page count based on total articles we have
         val pageCount = floor((allArticles + PAGESIZE - 1) / PAGESIZE.toDouble()).toInt()
-
-        val isAdmin = true
+        // verify the IP address, if admin = true, else false
+        val isAdmin = verifyAdmin(call)
 
         call.respond(
             HttpStatusCode.OK,
@@ -62,6 +63,17 @@ class Controller(
      * being the new article creation.
      */
     suspend fun displayNewArticlePage(call: ApplicationCall) {
+        // verify the IP address, if admin = true, else false
+        val isAdmin = verifyAdmin(call)
+
+        // If the IP isn't an admin, they don't get to see the page
+        if (!isAdmin) {
+            call.respond(
+                HttpStatusCode.NotFound,
+                "Hmmm, that page doesn't appear to exist."
+            )
+        }
+
         call.respond(
             HttpStatusCode.OK,
             FreeMarkerContent(
@@ -76,6 +88,17 @@ class Controller(
      * article, otherwise we return a NotModified response
      */
     suspend fun saveNewArticle(call: ApplicationCall) {
+        // verify the IP address, if admin = true, else false
+        val isAdmin = verifyAdmin(call)
+
+        // If the IP isn't an admin, they don't get to see the page
+        if (!isAdmin) {
+            call.respond(
+                HttpStatusCode.NotFound,
+                "Hmmm, that page doesn't appear to exist."
+            )
+        }
+
         val formParams = call.receiveParameters()
         val title = formParams.getOrFail("title").trim()
         val body = formParams.getOrFail("body").trim()
@@ -107,13 +130,18 @@ class Controller(
     suspend fun displaySingleArticle(call: ApplicationCall) {
         val id = call.parameters.getOrFail<String>("id")
         val article = articleRepo.getArticleById(id)
+        // verify the IP address, if admin = true, else false
+        val isAdmin = verifyAdmin(call)
 
         article?.let {
             call.respond(
                 HttpStatusCode.OK,
                 FreeMarkerContent(
                     "show.ftl",
-                    mapOf("article" to article)
+                    mapOf(
+                        "article" to article,
+                        "admin" to isAdmin,
+                    )
                 )
             )
         } ?: call.respond(
@@ -130,6 +158,17 @@ class Controller(
         val id = call.parameters.getOrFail<String>("id")
         val article = articleRepo.getArticleById(id)
 
+        // verify the IP address, if admin = true, else false
+        val isAdmin = verifyAdmin(call)
+
+        // If the IP isn't an admin, they don't get to see the page
+        if (!isAdmin) {
+            call.respond(
+                HttpStatusCode.NotFound,
+                "Hmmm, that page doesn't appear to exist."
+            )
+        }
+
         if (article == null) {
             call.respond(
                 HttpStatusCode.NotFound,
@@ -141,7 +180,10 @@ class Controller(
         call.respond(
             FreeMarkerContent(
                 "edit.ftl",
-                mapOf("article" to article)
+                mapOf(
+                    "article" to article,
+                    "admin" to isAdmin,
+                    )
             )
         )
     }
@@ -150,6 +192,17 @@ class Controller(
      * Handles calls to update an article
      */
     suspend fun updateArticleById(call: ApplicationCall) {
+        // verify the IP address, if admin = true, else false
+        val isAdmin = verifyAdmin(call)
+
+        // If the IP isn't an admin, they don't get to see the page
+        if (!isAdmin) {
+            call.respond(
+                HttpStatusCode.NotFound,
+                "Hmmm, that page doesn't appear to exist."
+            )
+        }
+
         val id = call.parameters.getOrFail<String>("id")
         val formParams = call.receiveParameters()
 
@@ -184,6 +237,17 @@ class Controller(
      * Handles calls to delete an article from the db.
      */
     suspend fun deleteArticleById(call: ApplicationCall) {
+        // verify the IP address, if admin = true, else false
+        val isAdmin = verifyAdmin(call)
+
+        // If the IP isn't an admin, they don't get to see the page
+        if (!isAdmin) {
+            call.respond(
+                HttpStatusCode.NotFound,
+                "Hmmm, that page doesn't appear to exist."
+            )
+        }
+
         val id = call.parameters.getOrFail<String>("id")
         val article = articleRepo.getArticleById(id)
 
@@ -195,6 +259,7 @@ class Controller(
             )
             return
         }
+
         // If the articles was successfully deleted, redirect back to the articles page
         if (articleRepo.deleteArticle(article.id)) {
             call.respondRedirect(
@@ -206,5 +271,19 @@ class Controller(
                 "Deletion of the article was not successful!"
             )
         }
+    }
+
+    /**
+     * Helper method for verify the IP belongs to an admin
+     */
+    private suspend fun verifyAdmin(call: ApplicationCall): Boolean {
+        val userIP = call.request.origin.remoteHost
+
+        // Check if the IP address matches our admin IPs
+        if (adminRepo.getAdminByIp(userIP)) {
+            return true
+        }
+        // if IP not in our table, return false
+        return false
     }
 }

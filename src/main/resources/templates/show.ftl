@@ -9,8 +9,10 @@
             ${article.body}
         </p>
         <hr>
-        <p>
-            <a href="/articles/${article.id}/edit">Edit article</a>
-        </p>
+        <#if admin>
+            <p>
+                <a href="/articles/${article.id}/edit">Edit article</a>
+            </p>
+        </#if>
     </div>
 </@layout.header>

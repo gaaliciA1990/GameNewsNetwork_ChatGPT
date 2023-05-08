@@ -8,5 +8,5 @@ import org.bson.codecs.pojo.annotations.BsonId
 data class Admin (
     @BsonId
     val id: String,
-    val ip: String
+    var ip: String
 )
