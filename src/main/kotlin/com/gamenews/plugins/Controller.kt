@@ -183,7 +183,7 @@ class Controller(
                 mapOf(
                     "article" to article,
                     "admin" to isAdmin,
-                    )
+                )
             )
         )
     }
