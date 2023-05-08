@@ -24,7 +24,11 @@
         </#list>
     </div>
     <hr>
-    <p>
-        <a href="/articles/new">Create article</a>
-    </p>
+
+    <#-- If admin is true, show the create article button-->
+    <#if admin>
+        <p>
+            <a href="/articles/new">Create article</a>
+        </p>
+    </#if>
 </@layout.header>

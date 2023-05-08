@@ -24,16 +24,16 @@ import kotlin.test.assertTrue
 /**
  * Unit tests for the ArticlesDB class
  */
-class ArticlesDatabaseTest {
+class ArticlesRepositoryTest {
     lateinit var mockCollection: CoroutineCollection<Article>
-    lateinit var articlesDB: ArticlesDatabase
+    lateinit var articlesDB: ArticlesRepository
     lateinit var publisher: CoroutineFindPublisher<Article>
     private var date: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
 
     @BeforeTest
     fun beforeEach() {
         mockCollection = mockk()
-        articlesDB = ArticlesDatabase(mockCollection)
+        articlesDB = ArticlesRepository(mockCollection)
         publisher = mockk()
     }
 

@@ -2,7 +2,8 @@
 
 package com.gamenews
 
-import com.gamenews.data.ArticlesDatabase
+import com.gamenews.data.AdminRepository
+import com.gamenews.data.ArticlesRepository
 import com.gamenews.models.Article
 import com.gamenews.plugins.Controller
 import com.gamenews.plugins.configureRouting
@@ -26,17 +27,21 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ApplicationTest {
-    lateinit var mockDB: ArticlesDatabase
+    lateinit var mockArticleRepo: ArticlesRepository
+    lateinit var mockAdminRepo: AdminRepository
     lateinit var controller: Controller
     private val publishDate: LocalDateTime = LocalDateTime.parse("2023-04-16T16:41:00")
 
     @BeforeTest
     fun beforeEach() {
-        mockDB = mockk()
-        controller = Controller(mockDB)
+        mockArticleRepo = mockk()
+        mockAdminRepo = mockk()
+        controller = Controller(mockArticleRepo, mockAdminRepo)
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns false
     }
 
     @AfterTest
@@ -59,7 +64,7 @@ class ApplicationTest {
      * all information is displayed from template
      */
     @Test
-    fun testRoot() = configuredTestApplication {
+    fun `all articles are loaded and displayed with admin IP to show create new article`() = configuredTestApplication {
         application {
             configureRouting(controller)
             configureTemplating()
@@ -67,8 +72,12 @@ class ApplicationTest {
         val articleCount = 3
 
         // mock the articles in the mock DB
-        coEvery { mockDB.getArticlesCount() } returns articleCount
-        coEvery { mockDB.getSetOfArticles(any(), any()) } returns listOf(mockk(relaxed = true), mockk(relaxed = true))
+        coEvery { mockArticleRepo.getArticlesCount() } returns articleCount
+        coEvery { mockArticleRepo.getSetOfArticles(any(), any()) } returns listOf(
+            mockk(relaxed = true),
+            mockk(relaxed = true)
+        )
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
         // DO
         val response = client.get("/")
@@ -76,15 +85,42 @@ class ApplicationTest {
         // ASSERT
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("GNN"))
+        assertTrue(response.bodyAsText().contains("Create article"))
     }
 
     @Test
-    fun `new article page is displayed when going to create a new article`() = configuredTestApplication {
+    fun `all articles are loaded and displayed with non admin IP to hide create new article`() = configuredTestApplication {
+        application {
+            configureRouting(controller)
+            configureTemplating()
+        }
+        val articleCount = 3
+
+        // mock the articles in the mock DB
+        coEvery { mockArticleRepo.getArticlesCount() } returns articleCount
+        coEvery { mockArticleRepo.getSetOfArticles(any(), any()) } returns listOf(
+            mockk(relaxed = true),
+            mockk(relaxed = true)
+        )
+
+        // DO
+        val response = client.get("/")
+
+        // ASSERT
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertTrue(response.bodyAsText().contains("GNN"))
+        assertFalse(response.bodyAsText().contains("Create article"))
+    }
+
+    @Test
+    fun `new article page is displayed when going to create a new article as admin`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
             configureTemplating()
         }
+
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
         // DO
         val response = client.get("/articles/new")
@@ -95,7 +131,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `save new articles creates an article and responds with HTTPS Found status`() = configuredTestApplication {
+    fun `save new articles creates an article and responds with HTTPS Found status as admin`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -106,7 +142,8 @@ class ApplicationTest {
         val date = "2023-04-16 16:41:00"
 
         // Mock db to create article
-        coEvery { mockDB.createArticle(any()) } returns true
+        coEvery { mockArticleRepo.createArticle(any()) } returns true
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
         // DO
         val response = client.post("/articles") {
@@ -126,7 +163,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `save new articles fails to save and responds with HTTPS Not Modified status `() = configuredTestApplication {
+    fun `save new articles fails to save and responds with HTTPS Not Modified status as admin`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -138,7 +175,8 @@ class ApplicationTest {
         val date = "2023-04-16 16:41:00"
 
         // Mock db to create article
-        coEvery { mockDB.createArticle(any()) } returns false
+        coEvery { mockArticleRepo.createArticle(any()) } returns false
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
         // DO
         val response = client.post("/articles") {
@@ -159,7 +197,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `single article is displayed when using an article id and responds with HTTPS OK status `() =
+    fun `single article is displayed when using an article id and responds with HTTPS OK status as admin`() =
         configuredTestApplication {
             // SET UP
             application {
@@ -172,7 +210,8 @@ class ApplicationTest {
             val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article
-            coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
+            coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
             // DO
             val response = client.get("/articles/${testArticle.id}")
@@ -183,7 +222,7 @@ class ApplicationTest {
         }
 
     @Test
-    fun `single article is not displayed when using an id and responds with HTTPS Not Found status `() =
+    fun `single article is not displayed when using an id and responds with HTTPS Not Found status as admin`() =
         configuredTestApplication {
             // SET UP
             application {
@@ -194,7 +233,8 @@ class ApplicationTest {
             val testArticle = Article.newEntry("null", "null", publishDate)
 
             // Mock db to get an article but return null value
-            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns null
+            coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
             // DO
             val response = client.get("/articles/${testArticle.id}")
@@ -205,7 +245,7 @@ class ApplicationTest {
         }
 
     @Test
-    fun `display article to edit shows the edit page`() = configuredTestApplication {
+    fun `display article to edit shows the edit page as admin`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -217,8 +257,10 @@ class ApplicationTest {
 
         val testArticle = Article.newEntry(title, body, publishDate)
 
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
+
         // Mock db to get an article
-        coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+        coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
 
         // DO
         val response = client.get("/articles/${testArticle.id}/edit")
@@ -228,7 +270,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `display article fails to shows the edit page and responds with HTTPS Not Found status`() =
+    fun `display article fails to shows the edit page and responds with HTTPS Not Found status as admin`() =
         configuredTestApplication {
             // SET UP
             application {
@@ -239,7 +281,8 @@ class ApplicationTest {
             val testArticle = Article.newEntry("null", "null", publishDate)
 
             // Mock db to get an article but return null value
-            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns null
+            coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
             // DO
             val response = client.get("/articles/${testArticle.id}/edit")
@@ -250,7 +293,7 @@ class ApplicationTest {
         }
 
     @Test
-    fun `updating an article updates the article in the db and returns HTTPS Found status `() =
+    fun `updating an article updates the article in the db and returns HTTPS Found status as admin`() =
         configuredTestApplication {
             // SET UP
             application {
@@ -264,9 +307,10 @@ class ApplicationTest {
             val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article
-            coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
             // Mock update to return true for success
-            coEvery { mockDB.updateArticle(testArticle) } returns true
+            coEvery { mockArticleRepo.updateArticle(testArticle) } returns true
+            coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
             // DO
             val response = client.post("/articles/update/${testArticle.id}") {
@@ -285,7 +329,7 @@ class ApplicationTest {
         }
 
     @Test
-    fun `updating an article fails to update in the db and returns HTTPS Not Modified status `() =
+    fun `updating an article fails to update in the db and returns HTTPS Not Modified status admin`() =
         configuredTestApplication {
             // SET UP
             application {
@@ -297,9 +341,10 @@ class ApplicationTest {
             val testArticle = Article.newEntry("null", "null", publishDate)
 
             // Mock db to get an article
-            coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
             // Mock update to return false for failure
-            coEvery { mockDB.updateArticle(testArticle) } returns false
+            coEvery { mockArticleRepo.updateArticle(testArticle) } returns false
+            coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
             // DO
             val response = client.post("/articles/update/${testArticle.id}") {
@@ -319,7 +364,7 @@ class ApplicationTest {
         }
 
     @Test
-    fun `updating an article fails due to article not found and returns HTTPS Bad Request status `() =
+    fun `updating an article fails due to article not found and returns HTTPS Bad Request status as admin`() =
         configuredTestApplication {
             // SET UP
             application {
@@ -333,7 +378,8 @@ class ApplicationTest {
             val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article but doesn't find it
-            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns null
+            coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
             // DO
             val response = client.post("/articles/update/${testArticle.id}") {
@@ -353,7 +399,7 @@ class ApplicationTest {
         }
 
     @Test
-    fun `deleting an article succeeds and returns HTTPS Found status `() = configuredTestApplication {
+    fun `deleting an article succeeds and returns HTTPS Found status as admin`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -365,8 +411,9 @@ class ApplicationTest {
         val testArticle = Article.newEntry(title, body, publishDate)
 
         // Mock db to get an article but doesn't find it
-        coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
-        coEvery { mockDB.deleteArticle(testArticle.id) } returns true
+        coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
+        coEvery { mockArticleRepo.deleteArticle(testArticle.id) } returns true
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
         // DO
         val response = client.post("/articles/delete/${testArticle.id}") {
@@ -378,7 +425,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `deleting an article fails to delete and returns HTTPS Not Modified status `() = configuredTestApplication {
+    fun `deleting an article fails to delete and returns HTTPS Not Modified status as admin`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -390,8 +437,9 @@ class ApplicationTest {
         val testArticle = Article.newEntry(title, body, publishDate)
 
         // Mock db to get an article but doesn't find it
-        coEvery { mockDB.getArticleById(testArticle.id) } returns testArticle
-        coEvery { mockDB.deleteArticle(testArticle.id) } returns false
+        coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
+        coEvery { mockArticleRepo.deleteArticle(testArticle.id) } returns false
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
         // DO
         val response = client.post("/articles/delete/${testArticle.id}") {
@@ -404,7 +452,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `deleting an article fails due to article not found and returns HTTPS Bad Request status `() =
+    fun `deleting an article fails due to article not found and returns HTTPS Bad Request status as admin`() =
         configuredTestApplication {
             // SET UP
             application {
@@ -417,7 +465,8 @@ class ApplicationTest {
             val testArticle = Article.newEntry(title, body, publishDate)
 
             // Mock db to get an article but doesn't find it
-            coEvery { mockDB.getArticleById(testArticle.id) } returns null
+            coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns null
+            coEvery { mockAdminRepo.getAdminByIp(any()) } returns true
 
             // DO
             val response = client.post("/articles/delete/${testArticle.id}") {
