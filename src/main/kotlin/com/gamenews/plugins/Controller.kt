@@ -12,6 +12,7 @@ import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.util.getOrFail
+import io.ktor.util.logging.KtorSimpleLogger
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.floor
@@ -25,6 +26,7 @@ class Controller(
 ) {
     companion object {
         const val PAGESIZE = 3
+        internal val LOGGER = KtorSimpleLogger("com.gamenews.plugins.Controller")
     }
 
     /**
@@ -239,14 +241,14 @@ class Controller(
      * Helper method for verify the IP belongs to an admin
      */
     private suspend fun verifyAdmin(call: ApplicationCall): Boolean {
-        val userIP = call.request.origin.remoteHost
+        val userIP = call.request.origin.remoteAddress
+        LOGGER.info("IP address received = $userIP")
 
         // Check if the IP address matches our admin IPs
-        if (adminRepo.getAdminByIp(userIP)) {
-            return true
-        }
-        // if IP not in our table, return false
-        return false
+        val isAdmin = adminRepo.getAdminByIp(userIP)
+        LOGGER.info("IsAdmin = $isAdmin")
+
+         return isAdmin
     }
 
     /**
