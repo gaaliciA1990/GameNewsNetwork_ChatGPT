@@ -4,6 +4,7 @@ package com.gamenews
 
 import com.gamenews.data.AdminRepository
 import com.gamenews.data.ArticlesRepository
+import com.gamenews.exceptions.UnauthorizedAccessException
 import com.gamenews.models.Article
 import com.gamenews.plugins.Controller
 import com.gamenews.plugins.configureRouting
@@ -23,12 +24,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import java.time.LocalDateTime
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class ApplicationTest {
     lateinit var mockArticleRepo: ArticlesRepository
@@ -45,7 +41,7 @@ class ApplicationTest {
     }
 
     @AfterTest
-    fun aftereach() {
+    fun afterEach() {
         clearAllMocks()
         unmockkAll()
     }
@@ -64,7 +60,7 @@ class ApplicationTest {
      * all information is displayed from template
      */
     @Test
-    fun `all articles are loaded and displayed with admin IP to show create new article`() = configuredTestApplication {
+    fun `all articles are loaded and displayed with create new article visible as admin`() = configuredTestApplication {
         application {
             configureRouting(controller)
             configureTemplating()
@@ -89,7 +85,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `all articles are loaded and displayed with non admin IP to hide create new article`() = configuredTestApplication {
+    fun `all articles are loaded and displayed with create new article hidden as non admin`() = configuredTestApplication {
         application {
             configureRouting(controller)
             configureTemplating()
@@ -113,7 +109,25 @@ class ApplicationTest {
     }
 
     @Test
-    fun `new article page is displayed when going to create a new article as admin`() = configuredTestApplication {
+    fun `new article page inaccessible as non admin`() = configuredTestApplication {
+        // SET UP
+        application {
+            configureRouting(controller)
+            configureTemplating()
+        }
+
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns false
+
+        // DO
+
+        // ASSERT
+        assertFailsWith<UnauthorizedAccessException> {
+            client.get("/articles/new")
+        }
+    }
+
+    @Test
+    fun `new article page is displayed as admin`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -245,7 +259,31 @@ class ApplicationTest {
         }
 
     @Test
-    fun `display article to edit shows the edit page as admin`() = configuredTestApplication {
+    fun `display article to edit fails as non admin`() = configuredTestApplication {
+        // SET UP
+        application {
+            configureRouting(controller)
+            configureTemplating()
+        }
+
+        val title = "I'm Fake"
+        val body = "Make me real!"
+
+        val testArticle = Article.newEntry(title, body, publishDate)
+
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns false
+
+        // Mock db to get an article
+        coEvery { mockArticleRepo.getArticleById(testArticle.id) } returns testArticle
+
+        // ASSERT
+        assertFailsWith<UnauthorizedAccessException> {
+            client.get("/articles/${testArticle.id}/edit")
+        }
+    }
+
+    @Test
+    fun `display article to edit loads the edit page as admin`() = configuredTestApplication {
         // SET UP
         application {
             configureRouting(controller)
@@ -293,6 +331,26 @@ class ApplicationTest {
         }
 
     @Test
+    fun `updating an article fails as non admin`() = configuredTestApplication {
+        // SET UP
+        application {
+            configureRouting(controller)
+            configureTemplating()
+        }
+        val title = "Edit Me Article"
+        val body = "I'm so lonely!"
+
+        val testArticle = Article.newEntry(title, body, publishDate)
+
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns false
+
+        // ASSERT
+        assertFailsWith<UnauthorizedAccessException> {
+            client.post("/articles/update/${testArticle.id}")
+        }
+    }
+
+    @Test
     fun `updating an article updates the article in the db and returns HTTPS Found status as admin`() =
         configuredTestApplication {
             // SET UP
@@ -329,7 +387,7 @@ class ApplicationTest {
         }
 
     @Test
-    fun `updating an article fails to update in the db and returns HTTPS Not Modified status admin`() =
+    fun `updating an article fails to update in the db and returns HTTPS Not Modified status as admin`() =
         configuredTestApplication {
             // SET UP
             application {
@@ -397,6 +455,26 @@ class ApplicationTest {
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertTrue(response.bodyAsText().contains("Sorry, this article no longer exists"))
         }
+
+    @Test
+    fun `deleting an article fails as non admin`() = configuredTestApplication {
+        // SET UP
+        application {
+            configureRouting(controller)
+            configureTemplating()
+        }
+        val title = "Deleted Article"
+        val body = "What did I do to deserve this?!"
+
+        val testArticle = Article.newEntry(title, body, publishDate)
+
+        coEvery { mockAdminRepo.getAdminByIp(any()) } returns false
+
+        // ASSERT
+        assertFailsWith<UnauthorizedAccessException> {
+            client.post("/articles/delete/${testArticle.id}")
+        }
+    }
 
     @Test
     fun `deleting an article succeeds and returns HTTPS Found status as admin`() = configuredTestApplication {
