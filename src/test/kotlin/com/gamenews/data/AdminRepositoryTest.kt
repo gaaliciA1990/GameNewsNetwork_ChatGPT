@@ -1,7 +1,6 @@
 package com.gamenews.data
 
 import com.gamenews.models.Admin
-import com.mongodb.client.result.UpdateResult
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -10,7 +9,11 @@ import kotlinx.coroutines.test.runTest
 import org.bson.conversions.Bson
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.CoroutineFindPublisher
-import kotlin.test.*
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * Unit tests for the ArticlesDB class
